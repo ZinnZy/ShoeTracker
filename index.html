@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shoe Tracker</title>
+<meta name="description" content="Track km on your running shoes and know when to retire them.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Shoes">
+<style>
+:root{
+  --bg:#f6f7f8;--surface:#fff;--text:#16181d;--muted:#667085;--line:#e4e7ec;
+  --accent:#0f766e;--accent-ink:#fff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;
+  --warn-bg:#fff7e6;--bad-bg:#fdecec;--track:#eceef1;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1115;--surface:#181b21;--text:#eef0f3;--muted:#98a2b3;--line:#2a2f38;
+  --accent:#2dd4bf;--accent-ink:#06201d;--ok:#22c55e;--warn:#f59e0b;--bad:#f87171;
+  --warn-bg:#2b2210;--bad-bg:#2e1616;--track:#262a32;
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(12px + env(safe-area-inset-top)) 0 8px}
+.hrow{display:flex;align-items:center;justify-content:space-between}
+h1{font-size:22px;margin:0}
+.icon-btn{border:0;background:none;color:var(--text);font-size:22px;padding:6px 10px;border-radius:10px;cursor:pointer}
+.tabs{display:flex;gap:4px;background:var(--track);padding:4px;border-radius:12px;margin-top:10px}
+.tabs button{flex:1;border:0;background:none;color:var(--muted);padding:8px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px #0002}
+.alerts{margin:12px 0 0;display:grid;gap:6px}
+.alert{background:var(--bad-bg);color:var(--bad);padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500}
+.alert.w{background:var(--warn-bg);color:var(--warn)}
+.list{display:grid;gap:10px;margin-top:12px}
+.card{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:12px;border-radius:14px;font:inherit;cursor:pointer}
+.thumb{flex:none;width:56px;height:56px;border-radius:12px;background:var(--track);display:grid;place-items:center;font-weight:700;color:var(--muted);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.name{font-weight:650;overflow:hidden;text-overflow:ellipsis}
+.star{color:var(--warn)}
+.tag{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--track);color:var(--muted)}
+.bar{height:8px;background:var(--track);border-radius:99px;overflow:hidden;margin:8px 0 6px}
+.bar i{display:block;height:100%;border-radius:99px}
+.meta{font-size:13px;color:var(--muted)}
+.meta b{color:var(--text)}
+.warn{font-size:13px;color:var(--bad);margin-top:4px;font-weight:500}
+.warn.age{color:var(--warn)}
+.empty{text-align:center;color:var(--muted);padding:48px 16px}
+.empty button{margin-top:12px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat .v{font-size:22px;font-weight:700}
+.stat .l{font-size:12px;color:var(--muted)}
+.month{font-size:13px;font-weight:600;color:var(--muted);margin:16px 4px 6px;display:flex;justify-content:space-between}
+.runs{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.run{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);cursor:pointer}
+.run:first-child{border-top:0}
+.run .d{width:52px;font-size:13px;color:var(--muted)}
+.run .s{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.run .k{font-weight:650}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
+.btn{border:0;border-radius:12px;padding:12px 18px;white-space:nowrap;font:inherit;font-weight:650;cursor:pointer;background:var(--track);color:var(--text)}
+.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--bad-bg);color:var(--bad)}
+.fab .btn{box-shadow:0 6px 20px #0003;padding:14px 22px;border-radius:99px}
+dialog{border:0;padding:0;background:var(--surface);color:var(--text);width:min(560px,100%);max-height:92vh;border-radius:18px 18px 0 0;margin:auto auto 0}
+@media (min-width:600px){dialog{border-radius:18px;margin:auto}}
+dialog::backdrop{background:#0008}
+dialog form{padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+dialog h2{margin:0 0 14px;font-size:19px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:15px;color:var(--text);font-weight:500}
+.check input{width:auto}
+.actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.actions .grow{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.photo{display:flex;align-items:center;gap:10px}
+.photo .thumb{width:64px;height:64px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="hrow"><h1>Shoe Tracker</h1><button class="icon-btn" id="menuBtn" aria-label="Settings">⚙︎</button></div>
+    <nav class="tabs">
+      <button data-tab="shoes" class="on">Shoes</button>
+      <button data-tab="runs">Runs</button>
+      <button data-tab="retired">Retired</button>
+    </nav>
+  </header>
+  <main id="view"></main>
+</div>
+
+<div class="fab">
+  <button class="btn" id="addShoeBtn">+ Shoe</button>
+  <button class="btn pri" id="addRunBtn">+ Run</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Shoe dialog -->
+<dialog id="shoeDlg">
+  <form id="shoeForm" method="dialog">
+    <h2 id="shoeTitle">Add shoe</h2>
+    <label for="sName">Name / model</label>
+    <input id="sName" required maxlength="60" placeholder="e.g. Pegasus 41 (blue)">
+    <div class="two">
+      <div><label for="sType">Type</label><select id="sType"></select></div>
+      <div><label for="sStart">First used</label><input id="sStart" type="date" required></div>
+    </div>
+    <div class="two">
+      <div><label for="sStartKm">Km already on it</label><input id="sStartKm" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
+      <div><label for="sLimit">Retire at (km)</label><input id="sLimit" type="number" inputmode="decimal" min="1" step="any" value="700" required></div>
+    </div>
+    <label for="sPrice">Price <span id="curLbl"></span> (optional, for cost/km)</label>
+    <input id="sPrice" type="number" inputmode="decimal" min="0" step="any">
+    <label>Photo (optional)</label>
+    <div class="photo">
+      <div class="thumb" id="sPhotoPrev"></div>
+      <input id="sPhoto" type="file" accept="image/*" hidden>
+      <button type="button" class="btn" id="sPhotoPick">Choose</button>
+      <button type="button" class="btn" id="sPhotoDel">Remove</button>
+    </div>
+    <label class="check"><input type="checkbox" id="sDefault"> Default shoe for new runs</label>
+    <div class="actions">
+      <button type="button" class="btn danger" id="sDelete">Delete</button>
+      <button type="button" class="btn" id="sRetire">Retire</button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button class="btn pri" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Run dialog -->
+<dialog id="runDlg">
+  <form id="runForm" method="dialog">
+    <h2 id="runTitle">Log run</h2>
+    <label for="rShoe">Shoe</label>
+    <select id="rShoe" required></select>
+    <div class="two">
+      <div><label for="rKm">Distance (km)</label><input id="rKm" type="number" inputmode="decimal" min="0.01" step="any" required></div>
+      <div><label for="rDate">Date</label><input id="rDate" type="date" required></div>
+    </div>
+    <div class="chips" id="rChips"></div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="rDelete">Delete</button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button class="btn pri" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Settings dialog -->
+<dialog id="setDlg">
+  <form id="setForm" method="dialog">
+    <h2>Settings</h2>
+    <div class="two">
+      <div><label for="stAge">Age warning (months)</label><input id="stAge" type="number" min="1" step="1"></div>
+      <div><label for="stCur">Currency symbol</label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
+    </div>
+    <div class="actions"><span class="grow"></span><button class="btn pri" value="save">Save settings</button></div>
+    <hr>
+    <label>Data (stored only on this device)</label>
+    <div class="actions" style="margin-top:6px">
+      <button type="button" class="btn" id="bkJson">Backup (JSON)</button>
+      <button type="button" class="btn" id="bkRestore">Restore</button>
+      <button type="button" class="btn" id="bkCsv">Export runs (CSV)</button>
+      <input type="file" id="bkFile" accept="application/json,.json" hidden>
+    </div>
+    <div class="hint" id="bkInfo"></div>
+    <div class="actions"><span class="grow"></span><button type="button" class="btn" data-close>Close</button></div>
+  </form>
+</dialog>
+
+<script>
+const KEY = 'shoetracker.v1';
+const TYPES = ['Daily', 'Tempo', 'Race', 'Long run', 'Trail', 'Recovery', 'Walk / other'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
+const fmtKm = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
+const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+// ---------- state ----------
+function load() {
+  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null };
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.shoes)) return { ...base, ...d }; } catch (e) {}
+  return base;
+}
+let S = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch (e) { alert('Could not save — storage is full. Remove some shoe photos or export a backup.'); }
+}
+let tab = 'shoes';
+
+// ---------- stats ----------
+function stats(sh) {
+  let run = 0, n = 0;
+  for (const r of S.runs) if (r.shoeId === sh.id) { run += r.km; n++; }
+  const km = (sh.startKm || 0) + run;
+  const pct = sh.limitKm > 0 ? km / sh.limitKm : 0;
+  const end = sh.retired || today();
+  const ms = new Date(end) - new Date(sh.start);
+  const days = Math.max(0, Math.round(ms / 864e5));
+  return { km, pct, n, days, months: days / 30.44, cpk: sh.price > 0 && km > 0 ? sh.price / km : null };
+}
+const color = p => p >= .9 ? 'var(--bad)' : p >= .7 ? 'var(--warn)' : 'var(--ok)';
+const ageStr = m => m < 1 ? Math.round(m * 30.44) + ' d' : m < 12 ? Math.floor(m) + ' mo' : (m / 12).toFixed(1) + ' yr';
+const initials = n => n.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const money = v => esc(S.currency) + v.toLocaleString(undefined, { maximumFractionDigits: v < 10 ? 2 : 0 });
+const active = () => S.shoes.filter(s => !s.retired);
+const shoeById = id => S.shoes.find(s => s.id === id);
+
+// ---------- views ----------
+function thumb(sh) { return `<div class="thumb">${sh.photo ? `<img src="${esc(sh.photo)}" alt="">` : esc(initials(sh.name))}</div>`; }
+
+function card(sh) {
+  const s = stats(sh), warns = [];
+  if (!sh.retired) {
+    if (s.pct >= 1) warns.push(['', 'Past its limit — time to replace']);
+    else if (s.pct >= .9) warns.push(['', `${fmtKm(sh.limitKm - s.km)} km left — shop for a replacement`]);
+    if (s.months >= S.ageMonths) warns.push(['age', `Over ${S.ageMonths} months old — foam ages even without km`]);
+  }
+  const when = sh.retired ? `${fmtDate(sh.start)} → ${fmtDate(sh.retired)} (${ageStr(s.months)})` : ageStr(s.months) + ' old';
+  return `<button class="card" data-shoe="${sh.id}">${thumb(sh)}
+    <div class="info">
+      <div class="top"><span class="name">${esc(sh.name)}</span>${!sh.retired && S.defaultShoeId === sh.id ? '<span class="star" title="Default shoe">★</span>' : ''}${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}</div>
+      <div class="bar"><i style="width:${Math.min(s.pct, 1) * 100}%;background:${color(s.pct)}"></i></div>
+      <div class="meta"><b>${fmtKm(s.km)}</b> / ${fmtKm(sh.limitKm)} km · ${Math.round(s.pct * 100)}% · ${s.n} run${s.n === 1 ? '' : 's'}</div>
+      <div class="meta">${when}${s.cpk != null ? ` · ${money(s.cpk)}/km` : ''}</div>
+      ${warns.map(([c, w]) => `<div class="warn ${c}">${esc(w)}</div>`).join('')}
+    </div></button>`;
+}
+
+function viewShoes() {
+  const list = active();
+  if (!list.length) return `<div class="empty">No shoes yet.<br><button class="btn pri" data-act="addShoe">Add your first pair</button></div>`;
+  const sorted = [...list].sort((a, b) => stats(b).pct - stats(a).pct);
+  const alerts = [];
+  for (const sh of sorted) {
+    const s = stats(sh);
+    if (s.pct >= 1) alerts.push(`<div class="alert">${esc(sh.name)} is past ${fmtKm(sh.limitKm)} km. Retire it.</div>`);
+    else if (s.pct >= .9) alerts.push(`<div class="alert w">${esc(sh.name)} is at ${Math.round(s.pct * 100)}%. Replace soon.</div>`);
+  }
+  return (alerts.length ? `<div class="alerts">${alerts.join('')}</div>` : '') + `<div class="list">${sorted.map(card).join('')}</div>`;
+}
+
+function viewRetired() {
+  const list = S.shoes.filter(s => s.retired).sort((a, b) => b.retired.localeCompare(a.retired));
+  if (!list.length) return `<div class="empty">No retired shoes yet.<br>Tap a shoe and choose “Retire” when it's done.</div>`;
+  const total = list.reduce((a, sh) => a + stats(sh).km, 0);
+  return `<div class="summary"><div class="stat"><div class="v">${list.length}</div><div class="l">pairs retired</div></div>
+    <div class="stat"><div class="v">${fmtKm(total / list.length)}</div><div class="l">avg km per pair</div></div></div>
+    <div class="list">${list.map(card).join('')}</div>`;
+}
+
+function viewRuns() {
+  const runs = [...S.runs].sort((a, b) => b.date.localeCompare(a.date) || (b.t || 0) - (a.t || 0));
+  if (!runs.length) return `<div class="empty">No runs logged yet.<br>Tap “+ Run” after each run.</div>`;
+  const ym = today().slice(0, 7), y = today().slice(0, 4);
+  const sum = f => runs.filter(f).reduce((a, r) => a + r.km, 0);
+  let html = `<div class="summary"><div class="stat"><div class="v">${fmtKm(sum(r => r.date.startsWith(ym)))}</div><div class="l">km this month</div></div>
+    <div class="stat"><div class="v">${fmtKm(sum(r => r.date.startsWith(y)))}</div><div class="l">km this year</div></div></div>`;
+  const groups = new Map();
+  for (const r of runs) { const k = r.date.slice(0, 7); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+  for (const [k, rs] of groups) {
+    const label = new Date(k + '-01T00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    html += `<div class="month"><span>${label}</span><span>${fmtKm(rs.reduce((a, r) => a + r.km, 0))} km</span></div><div class="runs">`;
+    for (const r of rs) {
+      const sh = shoeById(r.shoeId);
+      const d = new Date(r.date + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', weekday: 'short' });
+      html += `<div class="run" data-run="${r.id}"><span class="d">${d}</span><span class="s">${esc(sh ? sh.name : '(deleted shoe)')}</span><span class="k">${fmtKm(r.km)} km</span></div>`;
+    }
+    html += '</div>';
+  }
+  return html;
+}
+
+function render() {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#view').innerHTML = tab === 'shoes' ? viewShoes() : tab === 'runs' ? viewRuns() : viewRetired();
+}
+
+// ---------- toast ----------
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3500); }
+
+// ---------- shoe dialog ----------
+let editShoe = null, pendingPhoto = null;
+$('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
+function setPhotoPrev() {
+  $('#sPhotoPrev').innerHTML = pendingPhoto ? `<img src="${esc(pendingPhoto)}" alt="">` : '👟';
+  $('#sPhotoDel').hidden = !pendingPhoto;
+}
+function openShoe(id) {
+  editShoe = id ? shoeById(id) : null;
+  const sh = editShoe || { name: '', type: 'Daily', start: today(), startKm: 0, limitKm: 700, price: '' };
+  $('#shoeTitle').textContent = editShoe ? 'Edit shoe' : 'Add shoe';
+  $('#sName').value = sh.name; $('#sType').value = sh.type || 'Daily'; $('#sStart').value = sh.start;
+  $('#sStartKm').value = sh.startKm || 0; $('#sLimit').value = sh.limitKm; $('#sPrice').value = sh.price || '';
+  $('#curLbl').textContent = S.currency ? `(${S.currency})` : '';
+  $('#sDefault').checked = editShoe ? S.defaultShoeId === sh.id : active().length === 0;
+  pendingPhoto = sh.photo || null; setPhotoPrev();
+  $('#sDelete').hidden = !editShoe; $('#sRetire').hidden = !editShoe;
+  $('#sRetire').textContent = editShoe && editShoe.retired ? 'Un-retire' : 'Retire';
+  $('#shoeDlg').showModal();
+}
+$('#sPhotoPick').onclick = () => $('#sPhoto').click();
+$('#sPhotoDel').onclick = () => { pendingPhoto = null; setPhotoPrev(); };
+$('#sPhoto').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { pendingPhoto = await squareThumb(f, 240); setPhotoPrev(); } catch { toast('Could not read that image'); }
+};
+function squareThumb(file, size) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(img.width, img.height), c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(img.src); res(c.toDataURL('image/jpeg', .75));
+    };
+    img.onerror = rej; img.src = URL.createObjectURL(file);
+  });
+}
+$('#shoeForm').onsubmit = e => {
+  e.preventDefault();
+  const data = {
+    name: $('#sName').value.trim(), type: $('#sType').value, start: $('#sStart').value,
+    startKm: Math.max(0, num($('#sStartKm').value)), limitKm: Math.max(1, num($('#sLimit').value)),
+    price: Math.max(0, num($('#sPrice').value)) || null, photo: pendingPhoto,
+  };
+  if (!data.name) return;
+  let sh = editShoe;
+  if (sh) Object.assign(sh, data); else { sh = { id: uid(), retired: null, ...data }; S.shoes.push(sh); }
+  if ($('#sDefault').checked) S.defaultShoeId = sh.id; else if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
+  save(); $('#shoeDlg').close(); render();
+};
+$('#sRetire').onclick = () => {
+  const sh = editShoe; if (!sh) return;
+  if (sh.retired) { sh.retired = null; toast(`${sh.name} is back in rotation`); }
+  else {
+    if (!confirm(`Retire ${sh.name}? It moves to the Retired tab with its stats.`)) return;
+    sh.retired = today(); if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
+    toast(`${sh.name} retired after ${fmtKm(stats(sh).km)} km`);
+  }
+  save(); $('#shoeDlg').close(); render();
+};
+$('#sDelete').onclick = () => {
+  const sh = editShoe; if (!sh) return;
+  const n = S.runs.filter(r => r.shoeId === sh.id).length;
+  if (!confirm(`Delete ${sh.name}${n ? ` and its ${n} logged run${n === 1 ? '' : 's'}` : ''}? This can't be undone.\n\n(Use “Retire” to keep its history.)`)) return;
+  S.shoes = S.shoes.filter(s => s.id !== sh.id); S.runs = S.runs.filter(r => r.shoeId !== sh.id);
+  if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
+  save(); $('#shoeDlg').close(); render();
+};
+
+// ---------- run dialog ----------
+let editRun = null;
+function openRun(id) {
+  editRun = id ? S.runs.find(r => r.id === id) : null;
+  const shoes = active();
+  if (editRun && !shoes.some(s => s.id === editRun.shoeId)) { const sh = shoeById(editRun.shoeId); if (sh) shoes.push(sh); }
+  if (!shoes.length) { toast('Add a shoe first'); openShoe(); return; }
+  $('#rShoe').innerHTML = shoes.map(s => `<option value="${s.id}">${esc(s.name)}${s.retired ? ' (retired)' : ''}</option>`).join('');
+  const lastShoe = [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0)).find(r => shoes.some(s => s.id === r.shoeId && !s.retired));
+  $('#rShoe').value = editRun ? editRun.shoeId : (shoes.some(s => s.id === S.defaultShoeId) ? S.defaultShoeId : lastShoe ? lastShoe.shoeId : shoes[0].id);
+  $('#rKm').value = editRun ? editRun.km : ''; $('#rDate').value = editRun ? editRun.date : today();
+  $('#runTitle').textContent = editRun ? 'Edit run' : 'Log run';
+  $('#rDelete').hidden = !editRun;
+  // quick-pick chips from recent distances
+  const seen = []; for (const r of [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0))) { if (!seen.includes(r.km)) seen.push(r.km); if (seen.length >= 6) break; }
+  $('#rChips').innerHTML = (seen.length ? seen : [5, 10, 21.1]).map(k => `<button type="button" class="chip" data-km="${k}">${fmtKm(k)} km</button>`).join('');
+  $('#runDlg').showModal();
+  if (!editRun) setTimeout(() => $('#rKm').focus(), 50);
+}
+$('#rChips').onclick = e => { const b = e.target.closest('[data-km]'); if (b) $('#rKm').value = b.dataset.km; };
+$('#runForm').onsubmit = e => {
+  e.preventDefault();
+  const km = num($('#rKm').value); if (km <= 0) return;
+  const shoeId = $('#rShoe').value, sh = shoeById(shoeId), before = stats(sh).pct;
+  if (editRun) Object.assign(editRun, { shoeId, km, date: $('#rDate').value });
+  else S.runs.push({ id: uid(), shoeId, km, date: $('#rDate').value, t: Date.now() });
+  save(); $('#runDlg').close(); render();
+  const after = stats(sh).pct;
+  if (before < 1 && after >= 1) toast(`⚠️ ${sh.name} passed its ${fmtKm(sh.limitKm)} km limit. Time to retire it.`);
+  else if (before < .9 && after >= .9) toast(`⚠️ ${sh.name} is at ${Math.round(after * 100)}%. Start shopping for a replacement.`);
+  else if (!editRun) toast(`+${fmtKm(km)} km on ${sh.name} (${fmtKm(stats(sh).km)} total)`);
+};
+$('#rDelete').onclick = () => {
+  if (!editRun || !confirm('Delete this run?')) return;
+  S.runs = S.runs.filter(r => r !== editRun); save(); $('#runDlg').close(); render();
+};
+
+// ---------- settings / backup ----------
+function openSettings() {
+  $('#stAge').value = S.ageMonths; $('#stCur').value = S.currency;
+  $('#bkInfo').textContent = `${S.shoes.length} shoes, ${S.runs.length} runs. ` + (S.lastBackup ? `Last backup: ${fmtDate(S.lastBackup)}.` : 'Never backed up — do it once in a while, since clearing browser data erases everything.');
+  $('#setDlg').showModal();
+}
+$('#setForm').onsubmit = e => {
+  e.preventDefault();
+  S.ageMonths = Math.max(1, Math.round(num($('#stAge').value)) || 12); S.currency = $('#stCur').value.trim();
+  save(); $('#setDlg').close(); render(); toast('Settings saved');
+};
+function download(name, text, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('#bkJson').onclick = () => {
+  S.lastBackup = today(); save();
+  download(`shoe-tracker-backup-${today()}.json`, JSON.stringify(S, null, 1), 'application/json'); openSettings();
+};
+$('#bkCsv').onclick = () => {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const rows = [['date', 'shoe', 'type', 'km']];
+  for (const r of [...S.runs].sort((a, b) => a.date.localeCompare(b.date))) { const sh = shoeById(r.shoeId); rows.push([r.date, sh ? sh.name : '', sh ? sh.type : '', r.km]); }
+  download(`shoe-runs-${today()}.csv`, '﻿' + rows.map(r => r.map(q).join(',')).join('\n'), 'text/csv');
+};
+$('#bkRestore').onclick = () => $('#bkFile').click();
+$('#bkFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!Array.isArray(d.shoes) || !Array.isArray(d.runs)) throw 0;
+    if (!confirm(`Replace current data with this backup (${d.shoes.length} shoes, ${d.runs.length} runs)?`)) return;
+    localStorage.setItem(KEY, JSON.stringify(d)); S = load(); render(); $('#setDlg').close(); toast('Backup restored');
+  } catch { toast('That file is not a valid Shoe Tracker backup'); }
+};
+
+// ---------- wiring ----------
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); scrollTo(0, 0); });
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+$('#addShoeBtn').onclick = () => openShoe();
+$('#addRunBtn').onclick = () => openRun();
+$('#menuBtn').onclick = openSettings;
+$('#view').onclick = e => {
+  const c = e.target.closest('[data-shoe]'); if (c) return openShoe(c.dataset.shoe);
+  const r = e.target.closest('[data-run]'); if (r) return openRun(r.dataset.run);
+  if (e.target.closest('[data-act="addShoe"]')) openShoe();
+};
+
+render();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
