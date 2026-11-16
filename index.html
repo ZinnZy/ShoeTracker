@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shoe Tracker</title>
-<meta name="description" content="Track km on your running shoes and know when to retire them.">
-<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Track distance on your running shoes and know when to retire them.">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -13,113 +13,160 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shoes">
 <style>
-:root,dialog{
-  --bg:#f6f7f8;--surface:#fff;--text:#16181d;--muted:#667085;--line:#e4e7ec;
-  --accent:#0f766e;--accent-ink:#fff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;
-  --warn-bg:#fff7e6;--bad-bg:#fdecec;--track:#eceef1;
-  color-scheme:light dark;
+/* Two looks for the whole app: Soft (default, on :root) and Contrast (body.look-contrast). */
+@font-face{font-family:'Archivo Black';src:url(fonts/archivo-black-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Space Mono';src:url(fonts/space-mono-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+:root{
+  --bg:#fff;--surface:#fff;--text:#2B2522;--muted:#5E5550;--faint:#6F6560;--line:#E7E1DC;--track:#F3EFEC;--soft:#F6F3F1;
+  --accent:#4E6485;--ok:#7FA88C;--warn:#8F560F;--bad:#B23A36;--warn-bg:#F7EEDD;--bad-bg:#F8E9E7;
+  --r:14px;--rs:12px;--pill:99px;--bw:1.5px;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root,dialog{
-  --bg:#0f1115;--surface:#181b21;--text:#eef0f3;--muted:#98a2b3;--line:#2a2f38;
-  --accent:#2dd4bf;--accent-ink:#06201d;--ok:#22c55e;--warn:#f59e0b;--bad:#f87171;
-  --warn-bg:#2b2210;--bad-bg:#2e1616;--track:#262a32;
-}}
+body.look-contrast{
+  --bg:#0A0A0A;--surface:#0A0A0A;--text:#fff;--muted:#A3A3A3;--faint:#808080;--line:#3A3A3A;--track:#1C1C1C;--soft:#1C1C1C;
+  --accent:#D4F23C;--ok:#D4F23C;--warn:#FF9F1C;--bad:#FF6B98;--warn-bg:#FF9F1C;--bad-bg:#FF6B98;
+  --r:0px;--rs:0px;--pill:0px;--bw:1px;
+  --disp:'Archivo Black','Arial Black',Impact,sans-serif;--mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;font-family:var(--mono);font-weight:700;
+}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+.look-soft :focus-visible{outline:2px solid #2B2522;outline-offset:2px}
+.look-contrast :focus-visible{outline:3px solid #D4F23C;outline-offset:3px}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(12px + env(safe-area-inset-top)) 0 8px}
-.hrow{display:flex;align-items:center;justify-content:space-between}
-h1{font-size:22px;margin:0}
-.icon-btn{border:0;background:none;color:var(--text);font-size:22px;padding:6px 10px;border-radius:10px;cursor:pointer}
-.tabs{display:flex;gap:4px;background:var(--track);padding:4px;border-radius:12px;margin-top:10px}
-.tabs button{flex:1;min-width:0;border:0;background:none;color:var(--muted);padding:8px 4px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
-.tabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px #0002}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(16px + env(safe-area-inset-top)) 0 8px}
+.hrow{display:flex;align-items:center;justify-content:space-between;height:44px}
+h1{font-size:20px;margin:0;white-space:nowrap}
+.hbtns{display:flex;align-items:center;gap:4px}
+.icon-btn{width:40px;height:44px;padding:0;border:0;background:none;color:var(--text);display:grid;place-items:center;cursor:pointer}
+#shareBtn{display:none}
+body.cal #shareBtn{display:grid}
+#styleBtn{position:relative;width:44px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
+#styleBtn::after,.look-soft .tabs button::after{content:'';position:absolute;inset:-5px 0}
+#styleBtn i{width:12px;height:12px}
+#styleBtn i:first-child{border-radius:99px;background:#E3A7B2}
+.tabs{display:flex;margin-top:14px;padding:4px}
+.tabs button{flex:1;min-width:0;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
 .alerts{margin:12px 0 0;display:grid;gap:6px}
-.alert{background:var(--bad-bg);color:var(--bad);padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500}
+.alert{background:var(--bad-bg);color:var(--bad);padding:10px 14px;border-radius:var(--r);font-size:14px;font-weight:600}
 .alert.w{background:var(--warn-bg);color:var(--warn)}
 .list{display:grid;gap:10px;margin-top:12px}
-.card{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:12px;border-radius:14px;font:inherit;cursor:pointer}
-.thumb{flex:none;width:56px;height:56px;border-radius:12px;background:var(--track);display:grid;place-items:center;font-weight:700;color:var(--muted);overflow:hidden}
+.card{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:var(--bw) solid var(--line);background:var(--surface);color:var(--text);padding:12px;border-radius:var(--r);font:inherit;cursor:pointer}
+.thumb{flex:none;width:56px;height:56px;border-radius:var(--rs);background:var(--c,var(--soft));display:grid;place-items:center;font-weight:700;color:var(--text);overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover}
+.thumb.cut img{object-fit:contain;padding:4px}
 .info{flex:1;min-width:0}
 .top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .name{font-weight:650;overflow:hidden;text-overflow:ellipsis}
-.star{color:var(--warn)}
-.tag{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--track);color:var(--muted)}
-.bar{height:8px;background:var(--track);border-radius:99px;overflow:hidden;margin:8px 0 6px}
-.bar i{display:block;height:100%;border-radius:99px}
+.star{color:var(--accent)}
+.tag{font-size:12px;padding:1px 8px;border-radius:var(--pill);background:var(--soft);color:var(--muted);white-space:nowrap}
+.bar{height:8px;background:var(--track);border-radius:var(--pill);overflow:hidden;margin:8px 0 6px}
+.bar i{display:block;height:100%;border-radius:var(--pill)}
 .meta{font-size:13px;color:var(--muted)}
 .meta b{color:var(--text)}
-.warn{font-size:13px;color:var(--bad);margin-top:4px;font-weight:500}
-.warn.age{color:var(--warn)}
+.warn{font-size:13px;color:var(--bad);margin-top:4px;font-weight:600}
 .empty{text-align:center;color:var(--muted);padding:48px 16px}
 .empty button{margin-top:12px}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r);padding:12px}
 .stat .v{font-size:22px;font-weight:700}
 .stat .l{font-size:12px;color:var(--muted)}
 .month{font-size:13px;font-weight:600;color:var(--muted);margin:16px 4px 6px;display:flex;justify-content:space-between}
-.runs{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.runs{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r);overflow:hidden}
 .run{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);cursor:pointer}
 .run:first-child{border-top:0}
 .run .d{width:52px;font-size:13px;color:var(--muted)}
 .run .s{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.run .k{font-weight:650}
+.run .k{font-weight:650;white-space:nowrap}
+button.run{width:100%;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;min-height:44px}
+.dot{flex:none;width:10px;height:10px;border-radius:var(--pill);border:1px solid var(--line)}
 .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
-.btn{border:0;border-radius:12px;padding:12px 18px;white-space:nowrap;font:inherit;font-weight:650;cursor:pointer;background:var(--track);color:var(--text)}
-.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btn{border:0;border-radius:var(--pill);padding:12px 18px;white-space:nowrap;font:inherit;font-weight:650;cursor:pointer;background:var(--soft);color:var(--text)}
+.btn.pri{background:var(--text);color:#fff}
 .btn.danger{background:var(--bad-bg);color:var(--bad)}
-.fab .btn{box-shadow:0 6px 20px #0003;padding:14px 22px;border-radius:99px}
-dialog{border:0;padding:0;background:var(--surface);color:var(--text);width:min(560px,100%);max-height:92vh;border-radius:18px 18px 0 0;margin:auto auto 0}
-@media (min-width:600px){dialog{border-radius:18px;margin:auto}}
+.fab .btn{height:48px}
+dialog{border:0;padding:0;background:var(--surface);color:var(--text);width:min(560px,100%);max-width:100%;max-height:92vh;border-radius:22px 22px 0 0;margin:auto auto 0}
+@media (min-width:600px){dialog{border-radius:22px;margin:auto}}
 dialog::backdrop{background:#0008}
-dialog form{padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-dialog h2{margin:0 0 14px;font-size:19px}
+dialog form{padding:20px 16px calc(18px + env(safe-area-inset-bottom))}
+dialog h2{margin:0 0 14px;font:italic 500 28px/1.1 Georgia,'Times New Roman',serif;letter-spacing:-.5px}
+dialog .empty{padding:20px 8px}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
-input,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}
+input,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:var(--bw) solid var(--line);border-radius:var(--rs);background:var(--bg);color:var(--text)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .check{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:15px;color:var(--text);font-weight:500}
 .check input{width:auto}
 .actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
 .actions .grow{flex:1}
+.actions .btn{padding:12px 13px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.chip{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
-.photo{display:flex;align-items:center;gap:10px}
+.chip{border:var(--bw) solid var(--line);background:var(--bg);color:var(--text);border-radius:var(--pill);padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.photo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .photo .thumb{width:64px;height:64px}
-.hint{font-size:12px;color:var(--muted);margin-top:4px}
-.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
-.toast.show{opacity:1}
-hr{border:0;border-top:1px solid var(--line);margin:16px 0}
-.hbtns{display:flex;align-items:center;gap:6px}
-.icon-btn svg,#calStyleBtn{display:none}
-.dot{flex:none;width:10px;height:10px;border-radius:99px;border:1px solid var(--line)}
-button.run{width:100%;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;min-height:44px}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
 .daysum{font-size:14px;color:var(--muted);margin:-8px 0 12px}
 .daysum b{color:var(--text)}
-dialog .empty{padding:20px 8px}
 .swatches{display:flex;gap:6px;flex-wrap:wrap}
-.sw{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--c);display:grid;place-items:center;cursor:pointer}
+.sw{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:var(--rs);background:var(--c);display:grid;place-items:center;cursor:pointer}
 .sw i{width:14px;height:14px;border-radius:99px;background:var(--d)}
 .sw[aria-checked=true]{outline:2px solid var(--text);outline-offset:2px}
+#shareImg{display:block;max-width:100%;max-height:52vh;margin:0 auto;border:1px solid var(--line)}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:var(--r);font-size:14px;z-index:20;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+
+/* ---------- Soft: header, tabs, floating buttons ---------- */
+.look-soft #styleBtn{border:1.5px solid var(--line);border-radius:99px;background:#fff}
+.look-soft #styleBtn i:first-child{box-shadow:0 0 0 2px #2B2522}
+.look-soft #styleBtn i:last-child{background:#111}
+.look-soft .tabs{gap:2px;border-radius:99px;background:var(--soft)}
+.look-soft .tabs button{position:relative;height:36px;padding:0 4px;border-radius:99px;font-size:14px}
+.look-soft .tabs button.on{background:var(--text);color:#fff}
+.look-soft .fab .btn{padding:0 22px;border:1.5px solid var(--line);background:#fff;box-shadow:0 6px 20px rgba(43,37,34,.12)}
+.look-soft .fab .btn.pri{border:0;background:var(--text);box-shadow:0 6px 20px rgba(43,37,34,.2)}
+
+/* ---------- Contrast: every component ---------- */
+.look-contrast h1{font:400 20px var(--disp);text-transform:uppercase;letter-spacing:.5px}
+.look-contrast #styleBtn{border:2px solid #fff;background:#0A0A0A}
+.look-contrast #styleBtn i:last-child{background:#D4F23C;outline:2px solid #fff;outline-offset:1px}
+.look-contrast .tabs{padding:0;border:2px solid #fff}
+.look-contrast .tabs button{height:44px;padding:0;font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.5px;color:#fff}
+.look-contrast .tabs button.on{background:var(--accent);color:#0A0A0A}
+.look-contrast .alert{color:#0A0A0A;font-size:12px;text-transform:uppercase}
+.look-contrast .thumb{color:var(--k,var(--muted));font-size:13px}
+.look-contrast .name{font:400 15px var(--disp);text-transform:uppercase}
+.look-contrast .tag{background:none;border:1px solid var(--faint);font-size:10px;text-transform:uppercase;padding:1px 5px}
+.look-contrast .bar{height:10px}
+.look-contrast .meta,.look-contrast .warn{font-size:11px}
+.look-contrast .empty{font-size:13px;text-transform:uppercase}
+.look-contrast .summary{gap:0;border:2px solid #fff}
+.look-contrast .stat{border:0;padding:8px 10px}
+.look-contrast .stat+.stat{border-left:2px solid #fff}
+.look-contrast .stat .v{font:400 26px/1.1 var(--disp)}
+.look-contrast .stat .l{font-size:10px;text-transform:uppercase}
+.look-contrast .month{font-size:11px;text-transform:uppercase;color:var(--accent)}
+.look-contrast .run{font-size:13px}
+.look-contrast .run .d{font-size:11px}
+.look-contrast .btn{border:2px solid #fff;background:#0A0A0A;color:#fff;font:700 13px var(--mono);text-transform:uppercase;padding:11px 14px}
+.look-contrast .btn.pri{border-color:var(--accent);background:var(--accent);color:#0A0A0A}
+.look-contrast .btn.danger{border-color:var(--bad);color:var(--bad)}
+.look-contrast .actions .btn{padding:11px 10px}
+.look-contrast .fab .btn{padding:0 20px;font-size:14px}
+.look-contrast dialog{border-top:2px solid #fff;border-radius:0}
+@media (min-width:600px){.look-contrast dialog{border:2px solid #fff}}
+.look-contrast dialog h2{font:400 22px/1.1 var(--disp);letter-spacing:0;text-transform:uppercase}
+.look-contrast label{font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.look-contrast .check{font-size:13px;text-transform:none;letter-spacing:0}
+.look-contrast input,.look-contrast select{border-color:var(--faint)}
+.look-contrast .chip{border-color:var(--faint);font-size:12px}
+.look-contrast .hint{font-size:11px}
+.look-contrast .daysum{font-size:12px;text-transform:uppercase}
+.look-contrast .toast{background:var(--accent);color:#0A0A0A;font-size:12px;text-transform:uppercase}
 
 /* ---------- calendar: shared layout ---------- */
-@font-face{font-family:'Archivo Black';src:url(fonts/archivo-black-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:'Space Mono';src:url(fonts/space-mono-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
-body.cal header{padding-top:calc(16px + env(safe-area-inset-top))}
-body.cal .hrow{height:44px}
-body.cal h1{font-size:20px}
-body.cal .icon-btn{width:44px;height:44px;padding:0;display:grid;place-items:center}
-body.cal .icon-btn span{display:none}
-body.cal .icon-btn svg{display:block}
-body.cal #calStyleBtn{display:flex;position:relative;width:44px;height:34px;padding:0;align-items:center;justify-content:center;gap:4px;cursor:pointer}
-body.cal #calStyleBtn::after,body.cal-soft .tabs button::after{content:'';position:absolute;inset:-5px 0}
-#calStyleBtn i{width:12px;height:12px}
-#calStyleBtn i:first-child{border-radius:99px;background:#E3A7B2}
-body.cal .tabs{margin-top:14px}
-body.cal .fab .btn{height:48px}
 .calv{display:flex;flex-direction:column;gap:14px;margin-top:6px;line-height:normal}
-.cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:4px}
+.cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:4px;margin-top:4px}
 .cal-title{display:flex;align-items:baseline;gap:10px;min-width:0}
 .cal-title h2{margin:0;white-space:nowrap}
 .cal-title h2 button{border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
@@ -129,6 +176,8 @@ body.cal .fab .btn{height:48px}
 .cal-block{display:flex;flex-direction:column;gap:6px}
 .cal-wd,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .cal-day{height:58px;min-width:0;margin:0;display:flex;flex-direction:column;justify-content:space-between;position:relative;font:inherit;cursor:pointer}
+.cal-day .ph{position:absolute;background:center/contain no-repeat}
+.cal-day .ph.sq{background-size:cover}
 .cal-legend{display:flex;flex-wrap:wrap}
 .cal-legend span{display:inline-flex;align-items:center;gap:6px}
 .cal-weeks h3{margin:0 0 6px}
@@ -140,92 +189,79 @@ body.cal .fab .btn{height:48px}
 @keyframes calIn{from{opacity:0}}
 
 /* ---------- calendar: Soft ---------- */
-body.cal-soft{--bg:#fff;--surface:#fff;--text:#2B2522;--muted:#5E5550;--line:#E7E1DC;--accent:#4E6485;--accent-ink:#fff;--track:#F3EFEC;color-scheme:light}
-body.cal-soft :is(header,main,.fab) :focus-visible{outline:2px solid #2B2522;outline-offset:2px}
-body.cal-soft #calStyleBtn{border:1.5px solid var(--line);border-radius:99px;background:#fff}
-body.cal-soft #calStyleBtn i:first-child{box-shadow:0 0 0 2px #2B2522}
-body.cal-soft #calStyleBtn i:last-child{background:#111}
-body.cal-soft .tabs{gap:2px;border-radius:99px;background:#F6F3F1}
-body.cal-soft .tabs button{position:relative;height:36px;padding:0 4px;border-radius:99px;font-size:14px}
-body.cal-soft .tabs button.on{background:var(--text);color:#fff;box-shadow:none}
-.cal-soft .cal-head{margin-top:4px}
-.cal-soft .cal-title h2{font:italic 500 52px/.95 Georgia,'Times New Roman',serif;letter-spacing:-1.5px}
-.cal-soft .cal-year{font-size:17px;font-weight:600;color:var(--accent)}
-.cal-soft .cal-nav button{border:1.5px solid var(--line);border-radius:99px}
-.cal-soft .cal-stats{gap:8px;flex-wrap:wrap}
-.cal-soft .cal-stats span{height:36px;padding:0 14px;border-radius:99px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;border:1.5px solid var(--line)}
-.cal-soft .cal-stats .k{height:34px;border:0;background:var(--text);color:#fff}
-.cal-soft .cal-wd span{text-align:center;font-size:11px;font-weight:600;color:#6F6560}
-.cal-soft .cal-wd span:first-child{color:var(--accent)}
-.cal-soft .cal-day{border-radius:14px;padding:6px 0 7px;align-items:center;background:#fff;border:1px solid var(--line);color:#6F6560}
-.cal-soft .cal-day .n{height:20px;line-height:20px;font-size:11px;font-weight:600}
-.cal-soft .cal-day .km{font-size:14px;font-weight:700;letter-spacing:-.2px}
-.cal-soft .cal-day .more{position:absolute;top:5px;right:5px;font-size:9px;font-weight:700}
-.cal-soft .cal-day.fut{background:#FAF8F6;border:0}
-.cal-soft .cal-day.run{background:var(--c);border:0;color:var(--text)}
-.cal-soft .cal-day.today .n{width:20px;border-radius:99px;background:var(--accent);color:#fff;font-weight:700;text-align:center}
-.cal-soft .cal-legend{gap:6px 14px}
-.cal-soft .cal-legend span{font-size:12px;color:var(--muted)}
-.cal-soft .cal-legend i{width:10px;height:10px;border-radius:99px;background:var(--k)}
-.cal-soft .cal-legend b{color:var(--text)}
-.cal-soft .cal-weeks h3{font-size:13px;font-weight:700}
-.cal-soft .cal-rows{grid-template-columns:minmax(74px,auto) 1fr minmax(36px,auto)}
-.cal-soft .cal-rows .l{font-size:12px;color:var(--muted)}
-.cal-soft .cal-rows .t{height:10px;border-radius:99px;background:var(--track);overflow:hidden}
-.cal-soft .cal-rows .t i{border-radius:99px;background:#9FB6CF}
-body.cal-soft .fab .btn{padding:0 22px;border:1.5px solid var(--line);background:#fff;color:var(--text);box-shadow:0 6px 20px rgba(43,37,34,.12)}
-body.cal-soft .fab .btn.pri{border:0;background:var(--text);color:#fff;box-shadow:0 6px 20px rgba(43,37,34,.2)}
+.look-soft .cal-title h2{font:italic 500 52px/.95 Georgia,'Times New Roman',serif;letter-spacing:-1.5px}
+.look-soft .cal-year{font-size:17px;font-weight:600;color:var(--accent)}
+.look-soft .cal-nav button{border:1.5px solid var(--line);border-radius:99px}
+.look-soft .cal-stats{gap:8px;flex-wrap:wrap}
+.look-soft .cal-stats span{height:36px;padding:0 14px;border-radius:99px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;border:1.5px solid var(--line)}
+.look-soft .cal-stats .k{height:34px;border:0;background:var(--text);color:#fff}
+.look-soft .cal-wd span{text-align:center;font-size:11px;font-weight:600;color:var(--faint)}
+.look-soft .cal-wd span:first-child{color:var(--accent)}
+.look-soft .cal-day{border-radius:14px;padding:6px 0 7px;align-items:center;background:#fff;border:1px solid var(--line);color:var(--faint)}
+.look-soft .cal-day .n{height:20px;line-height:20px;font-size:11px;font-weight:600}
+.look-soft .cal-day .km{font-size:14px;font-weight:700;letter-spacing:-.2px}
+.look-soft .cal-day .more{position:absolute;top:5px;right:5px;font-size:9px;font-weight:700}
+.look-soft .cal-day.fut{background:#FAF8F6;border:0}
+.look-soft .cal-day.run{background:var(--c);border:0;color:var(--text)}
+.look-soft .cal-day.today .n{width:20px;border-radius:99px;background:var(--accent);color:#fff;font-weight:700;text-align:center}
+.look-soft .cal-day.pic .n{position:absolute;top:3px;left:5px;height:16px;line-height:16px;font-size:10px}
+.look-soft .cal-day.pic.today .n{left:3px;width:16px}
+.look-soft .cal-day .ph{inset:16px 3px 4px}
+.look-soft .cal-day .ph.sq{inset:18px 6px 5px;border-radius:8px}
+.look-soft .cal-legend{gap:6px 14px}
+.look-soft .cal-legend span{font-size:12px;color:var(--muted)}
+.look-soft .cal-legend i{width:10px;height:10px;border-radius:99px;background:var(--k)}
+.look-soft .cal-legend b{color:var(--text)}
+.look-soft .cal-weeks h3{font-size:13px;font-weight:700}
+.look-soft .cal-rows{grid-template-columns:minmax(74px,auto) 1fr minmax(36px,auto)}
+.look-soft .cal-rows .l{font-size:12px;color:var(--muted)}
+.look-soft .cal-rows .t{height:10px;border-radius:99px;background:var(--track);overflow:hidden}
+.look-soft .cal-rows .t i{border-radius:99px;background:#9FB6CF}
 
 /* ---------- calendar: Contrast ---------- */
-body.cal-contrast{--bg:#0A0A0A;--surface:#0A0A0A;--text:#fff;--muted:#A3A3A3;--line:#3A3A3A;--accent:#D4F23C;--accent-ink:#0A0A0A;--track:#1C1C1C;color-scheme:dark;
-  --disp:'Archivo Black','Arial Black',Impact,sans-serif;--mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace}
-body.cal-contrast :is(header,main,.fab) :focus-visible{outline:3px solid #D4F23C;outline-offset:3px}
-body.cal-contrast h1{font-family:var(--disp);font-weight:400;text-transform:uppercase;letter-spacing:.5px}
-body.cal-contrast #calStyleBtn{border:2px solid #fff;border-radius:0;background:#0A0A0A}
-body.cal-contrast #calStyleBtn i:last-child{background:#D4F23C;outline:2px solid #fff;outline-offset:1px}
-body.cal-contrast .tabs{gap:0;padding:0;border-radius:0;background:none;border:2px solid #fff}
-body.cal-contrast .tabs button{height:44px;padding:0;border-radius:0;font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.5px;color:#fff}
-body.cal-contrast .tabs button.on{background:var(--accent);color:#0A0A0A;box-shadow:none}
-body.cal-contrast .toast{border-radius:0}
-.cal-contrast .calv{font-family:var(--mono);font-weight:700}
-.cal-contrast .cal-head{margin-top:4px}
-.cal-contrast .cal-title{align-items:flex-end}
-.cal-contrast .cal-title h2{font:400 84px/.8 var(--disp);letter-spacing:-3px;text-transform:uppercase}
-.cal-contrast .cal-year{font-size:15px;color:var(--accent);padding-bottom:2px}
-.cal-contrast .cal-nav button{border:2px solid #fff;border-radius:0}
-.cal-contrast .cal-stats{border:2px solid #fff;align-items:stretch}
-.cal-contrast .cal-stats div{flex:1;min-width:0;padding:8px 10px;display:flex;flex-direction:column;gap:2px;border-left:2px solid #fff}
-.cal-contrast .cal-stats div:first-child{border-left:0;background:var(--accent);color:#0A0A0A}
-.cal-contrast .cal-stats small{font-size:10px;color:var(--muted)}
-.cal-contrast .cal-stats div:first-child small{color:inherit}
-.cal-contrast .cal-stats b{font:400 26px/1 var(--disp)}
-.cal-contrast .cal-wd span{font-size:10px;text-transform:uppercase;color:var(--muted)}
-.cal-contrast .cal-wd span:first-child{color:var(--accent)}
-.cal-contrast .cal-day{border-radius:0;padding:4px 5px 5px;align-items:stretch;text-align:left;font-family:var(--mono);font-weight:700;background:#0A0A0A;border:1px solid #3A3A3A;color:#A3A3A3}
-.cal-contrast .cal-day .top{display:flex;justify-content:space-between;align-items:baseline}
-.cal-contrast .cal-day .n{font-size:10px}
-.cal-contrast .cal-day .code,.cal-contrast .cal-day .more{font-size:9px}
-.cal-contrast .cal-day .km{font:400 14px/1 var(--disp);letter-spacing:-.4px}
-.cal-contrast .cal-day.fut{border:1px dashed #2A2A2A;color:#808080}
-.cal-contrast .cal-day.run{background:var(--c);color:var(--k);border:0}
-.cal-contrast .cal-day.today{outline:2px solid #fff;outline-offset:2px}
-.cal-contrast .cal-legend{gap:6px 12px}
-.cal-contrast .cal-legend span{font-size:11px;color:var(--muted);text-transform:uppercase}
-.cal-contrast .cal-legend i{min-width:22px;height:16px;padding:0 3px;background:var(--c);color:var(--k);font-size:9px;font-style:normal;display:inline-grid;place-items:center}
-.cal-contrast .cal-legend b{color:#fff}
-.cal-contrast .cal-weeks h3{font:400 14px var(--disp);text-transform:uppercase;letter-spacing:.5px}
-.cal-contrast .cal-rows{grid-template-columns:minmax(78px,auto) 1fr minmax(40px,auto)}
-.cal-contrast .cal-rows .l{font-size:11px;color:var(--muted);text-transform:uppercase}
-.cal-contrast .cal-rows .t{height:14px;background:var(--track)}
-.cal-contrast .cal-rows .t i{background:var(--accent)}
-body.cal-contrast .fab .btn{padding:0 20px;border:2px solid #fff;border-radius:0;background:#0A0A0A;color:#fff;font:700 14px var(--mono);text-transform:uppercase;box-shadow:none}
-body.cal-contrast .fab .btn.pri{border-color:var(--accent);background:var(--accent);color:#0A0A0A}
+.look-contrast .cal-title{align-items:flex-end}
+.look-contrast .cal-title h2{font:400 84px/.8 var(--disp);letter-spacing:-3px;text-transform:uppercase}
+.look-contrast .cal-year{font-size:15px;color:var(--accent);padding-bottom:2px}
+.look-contrast .cal-nav button{border:2px solid #fff}
+.look-contrast .cal-stats{border:2px solid #fff;align-items:stretch}
+.look-contrast .cal-stats div{flex:1;min-width:0;padding:8px 10px;display:flex;flex-direction:column;gap:2px;border-left:2px solid #fff}
+.look-contrast .cal-stats div:first-child{border-left:0;background:var(--accent);color:#0A0A0A}
+.look-contrast .cal-stats small{font-size:10px;color:var(--muted)}
+.look-contrast .cal-stats div:first-child small{color:inherit}
+.look-contrast .cal-stats b{font:400 26px/1 var(--disp)}
+.look-contrast .cal-wd span{font-size:10px;text-transform:uppercase;color:var(--muted)}
+.look-contrast .cal-wd span:first-child{color:var(--accent)}
+.look-contrast .cal-day{padding:4px 5px 5px;align-items:stretch;text-align:left;font-family:var(--mono);font-weight:700;background:#0A0A0A;border:1px solid #3A3A3A;color:#A3A3A3}
+.look-contrast .cal-day .top{display:flex;justify-content:space-between;align-items:baseline}
+.look-contrast .cal-day .n{font-size:10px}
+.look-contrast .cal-day .code,.look-contrast .cal-day .more{font-size:9px}
+.look-contrast .cal-day .km{font:400 14px/1 var(--disp);letter-spacing:-.4px}
+.look-contrast .cal-day.fut{border:1px dashed #2A2A2A;color:#808080}
+.look-contrast .cal-day.run{background:var(--c);color:var(--k);border:0}
+.look-contrast .cal-day.pic{background:#0A0A0A;color:#fff;border:2px solid var(--c);padding:2px 3px 3px}
+.look-contrast .cal-day.today{outline:2px solid #fff;outline-offset:2px}
+.look-contrast .cal-day .ph{inset:15px 2px 2px}
+.look-contrast .cal-day .ph.sq{inset:16px 4px 3px}
+.look-contrast .cal-legend{gap:6px 12px}
+.look-contrast .cal-legend span{font-size:11px;color:var(--muted);text-transform:uppercase}
+.look-contrast .cal-legend i{min-width:22px;height:16px;padding:0 3px;background:var(--c);color:var(--k);font-size:9px;font-style:normal;display:inline-grid;place-items:center}
+.look-contrast .cal-legend b{color:#fff}
+.look-contrast .cal-weeks h3{font:400 14px var(--disp);text-transform:uppercase;letter-spacing:.5px}
+.look-contrast .cal-rows{grid-template-columns:minmax(78px,auto) 1fr minmax(40px,auto)}
+.look-contrast .cal-rows .l{font-size:11px;color:var(--muted);text-transform:uppercase}
+.look-contrast .cal-rows .t{height:14px;background:var(--track)}
+.look-contrast .cal-rows .t i{background:var(--accent)}
 </style>
+<style id="pics"></style>
 </head>
-<body>
+<body class="look-soft">
 <div class="wrap">
   <header>
-    <div class="hrow"><h1>Shoe Tracker</h1><div class="hbtns"><button type="button" id="calStyleBtn"><i></i><i></i></button><button class="icon-btn" id="menuBtn" aria-label="Settings"><span>⚙︎</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button></div></div>
+    <div class="hrow"><h1>Shoe Tracker</h1><div class="hbtns">
+      <button type="button" class="icon-btn" id="shareBtn" aria-label="Share this month"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg></button>
+      <button type="button" id="styleBtn"><i></i><i></i></button>
+      <button type="button" class="icon-btn" id="menuBtn" aria-label="Settings"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button>
+    </div></div>
     <nav class="tabs">
       <button data-tab="shoes" class="on">Shoes</button>
       <button data-tab="calendar">Calendar</button>
@@ -254,18 +290,20 @@ body.cal-contrast .fab .btn.pri{border-color:var(--accent);background:var(--acce
       <div><label for="sStart">First used</label><input id="sStart" type="date" required></div>
     </div>
     <div class="two">
-      <div><label for="sStartKm">Km already on it</label><input id="sStartKm" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
-      <div><label for="sLimit">Retire at (km)</label><input id="sLimit" type="number" inputmode="decimal" min="1" step="any" value="700" required></div>
+      <div><label for="sStartKm">Already run (<span class="u">km</span>)</label><input id="sStartKm" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
+      <div><label for="sLimit">Replace at (<span class="u">km</span>)</label><input id="sLimit" type="number" inputmode="decimal" min="1" step="any" required></div>
     </div>
-    <label for="sPrice">Price <span id="curLbl"></span> (optional, for cost/km)</label>
+    <label for="sPrice">Price <span id="curLbl"></span> (optional, for cost per <span class="u">km</span>)</label>
     <input id="sPrice" type="number" inputmode="decimal" min="0" step="any">
     <label>Photo (optional)</label>
     <div class="photo">
       <div class="thumb" id="sPhotoPrev"></div>
       <input id="sPhoto" type="file" accept="image/*" hidden>
       <button type="button" class="btn" id="sPhotoPick">Choose</button>
+      <button type="button" class="btn" id="sPhotoCut">Cut out</button>
       <button type="button" class="btn" id="sPhotoDel">Remove</button>
     </div>
+    <div class="hint" id="sPhotoNote"></div>
     <label id="sColorLbl">Calendar color</label>
     <div class="swatches" id="sColors" role="radiogroup" aria-labelledby="sColorLbl"></div>
     <label class="check"><input type="checkbox" id="sDefault"> Default shoe for new runs</label>
@@ -286,7 +324,7 @@ body.cal-contrast .fab .btn.pri{border-color:var(--accent);background:var(--acce
     <label for="rShoe">Shoe</label>
     <select id="rShoe" required></select>
     <div class="two">
-      <div><label for="rKm">Distance (km)</label><input id="rKm" type="number" inputmode="decimal" min="0.01" step="any" required></div>
+      <div><label for="rKm">Distance (<span class="u">km</span>)</label><input id="rKm" type="number" inputmode="decimal" min="0.01" step="any" required></div>
       <div><label for="rDate">Date</label><input id="rDate" type="date" required></div>
     </div>
     <div class="chips" id="rChips"></div>
@@ -312,17 +350,35 @@ body.cal-contrast .fab .btn.pri{border-color:var(--accent);background:var(--acce
   </form>
 </dialog>
 
+<!-- Share dialog (calendar) -->
+<dialog id="shareDlg">
+  <form method="dialog">
+    <h2>Share this month</h2>
+    <img id="shareImg" alt="Picture of this month's run calendar">
+    <div class="actions">
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Close</button>
+      <button type="button" class="btn" id="shareSave">Save image</button>
+      <button type="button" class="btn pri" id="shareGo">Share</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Settings dialog -->
 <dialog id="setDlg">
   <form id="setForm" method="dialog">
     <h2>Settings</h2>
     <div class="two">
-      <div><label for="stAge">Age warning (months)</label><input id="stAge" type="number" min="1" step="1"></div>
-      <div><label for="stCur">Currency symbol</label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
+      <div><label for="stUnit">Distance unit</label><select id="stUnit"><option value="km">Kilometres (km)</option><option value="mi">Miles (mi)</option></select></div>
+      <div><label for="stLimit">Replace shoes at (<span id="stLimitU">km</span>)</label><input id="stLimit" type="number" inputmode="decimal" min="1" step="any"></div>
     </div>
     <div class="two">
-      <div><label for="stCal">Calendar style</label><select id="stCal"><option value="soft">Soft</option><option value="contrast">Contrast</option></select></div>
+      <div><label for="stCal">Style</label><select id="stCal"><option value="soft">Soft</option><option value="contrast">Contrast</option></select></div>
       <div><label for="stWeek">Week starts on</label><select id="stWeek"><option value="0">Sunday</option><option value="1">Monday</option></select></div>
+    </div>
+    <div class="two">
+      <div><label for="stCell">Calendar days show</label><select id="stCell"><option value="block">Color block</option><option value="photo">Shoe photo</option></select></div>
+      <div><label for="stCur">Currency symbol</label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
     </div>
     <div class="actions"><span class="grow"></span><button class="btn pri" value="save">Save settings</button></div>
     <hr>
@@ -346,10 +402,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
-const fmtKm = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
 const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-/* pure:start — calendar maths. Data in, data out: no DOM, no reads of S. tests.html loads this block. */
+/* pure:start — calendar maths and units. Data in, data out: no DOM, no reads of S. tests.html loads this block. */
 const pad2 = n => String(n).padStart(2, '0');
 const iso = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d || 1); };  // local, never new Date(str)
@@ -404,16 +459,23 @@ function freeColor(shoes, pos, self) {
   return pos % 6;
 }
 function assignColors(shoes) { shoes.forEach((s, i) => { if (!validColor(s.colorIdx)) s.colorIdx = freeColor(shoes, i, s); }); return shoes; }
+// Everything is stored in km; miles only exist on screen.
+const KM_PER_MI = 1.609344;
+const kmTo = (km, unit) => unit === 'mi' ? km / KM_PER_MI : km;
+const kmFrom = (v, unit) => unit === 'mi' ? v * KM_PER_MI : v;
 /* pure:end */
 
 // ---------- state ----------
 function load() {
-  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0 };
+  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0, unit: 'km', limitKm: 700, calCell: 'block' };
   let d = base;
   try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.shoes)) d = { ...base, ...p }; } catch (e) {}
   // additive migration: fresh state, old state and restored backups all pass through here
-  if (d.calTheme !== 'contrast') d.calTheme = 'soft';
+  if (d.calTheme !== 'contrast') d.calTheme = 'soft';   // the look of the whole app (named calTheme since the calendar came first)
   d.weekStart = d.weekStart === 1 ? 1 : 0;
+  d.unit = d.unit === 'mi' ? 'mi' : 'km';
+  d.limitKm = d.limitKm > 0 ? +d.limitKm : 700;
+  d.calCell = d.calCell === 'photo' ? 'photo' : 'block';
   assignColors(d.shoes);
   return d;
 }
@@ -425,6 +487,17 @@ function save() {
 let tab = 'shoes';
 let calMonth = today().slice(0, 7), calSel = null, calAnim = false;
 
+// ---------- distance on screen ----------
+const U = () => S.unit;
+const fmtD = km => (Math.round(kmTo(km, S.unit) * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
+const d1 = km => (Math.round(kmTo(km, S.unit) * 10) / 10).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+// Distance inputs: show in the chosen unit, but hand back the exact stored km when the field was not edited (no rounding drift).
+function setD(el, km, dp = 2, unit = S.unit) {
+  el._km = km; el._unit = unit;
+  el.value = el._pre = km === '' || km == null ? '' : String(+kmTo(km, unit).toFixed(unit === 'mi' ? dp : 2));
+}
+const getD = el => el.value === el._pre && el._km !== '' && el._km != null ? el._km : kmFrom(num(el.value), el._unit || S.unit);
+
 // ---------- stats ----------
 function stats(sh) {
   let run = 0, n = 0;
@@ -434,7 +507,7 @@ function stats(sh) {
   const end = sh.retired || today();
   const ms = new Date(end) - new Date(sh.start);
   const days = Math.max(0, Math.round(ms / 864e5));
-  return { km, pct, n, days, months: days / 30.44, cpk: sh.price > 0 && km > 0 ? sh.price / km : null };
+  return { km, pct, n, days, months: days / 30.44, cpk: sh.price > 0 && km > 0 ? sh.price / kmTo(km, S.unit) : null };
 }
 const color = p => p >= .9 ? 'var(--bad)' : p >= .7 ? 'var(--warn)' : 'var(--ok)';
 const ageStr = m => m < 1 ? Math.round(m * 30.44) + ' d' : m < 12 ? Math.floor(m) + ' mo' : (m / 12).toFixed(1) + ' yr';
@@ -443,24 +516,36 @@ const money = v => esc(S.currency) + v.toLocaleString(undefined, { maximumFracti
 const active = () => S.shoes.filter(s => !s.retired);
 const shoeById = id => S.shoes.find(s => s.id === id);
 
+// ---------- shoe colors ----------
+// Palette by colorIdx. soft: [fill, dot]; contrast: [fill, text on it].
+const CAL_PAL = {
+  soft: [['#DCE6F0', '#9FB6CF'], ['#E9E2F2', '#BCA9D6'], ['#F6E0E4', '#E3A7B2'], ['#E1E8DC', '#A9BC9D'], ['#F4E6D8', '#D9B38C'], ['#EDEBE8', '#9C9A98']],
+  contrast: [['#D4F23C', '#0A0A0A'], ['#FFFFFF', '#0A0A0A'], ['#FF6B98', '#0A0A0A'], ['#2D46F5', '#FFFFFF'], ['#FF9F1C', '#0A0A0A'], ['#3DDCFF', '#0A0A0A']],
+};
+const CAL_NAMES = { soft: ['Blue', 'Lilac', 'Rose', 'Sage', 'Sand', 'Grey'], contrast: ['Volt', 'White', 'Pink', 'Blue', 'Orange', 'Cyan'] };
+const calPal = idx => CAL_PAL[S.calTheme][validColor(idx) ? idx : 0];
+const calVars = idx => { const [c, k] = calPal(idx); return `--c:${c};--k:${k}`; };
+const calDot = idx => calPal(idx)[S.calTheme === 'soft' ? 1 : 0];
+const calShoe = id => { const sh = shoeById(id); return sh ? { name: sh.name, type: sh.type || '', idx: sh.colorIdx, code: initials(sh.name), photo: sh.photo, cut: !!sh.photoCut } : { name: '(deleted shoe)', type: '', idx: 0, code: '?', photo: null, cut: false }; };
+const loc = (d, o) => d.toLocaleDateString(undefined, o);
+
 // ---------- views ----------
-function thumb(sh) { return `<div class="thumb">${sh.photo ? `<img src="${esc(sh.photo)}" alt="">` : esc(initials(sh.name))}</div>`; }
+function thumb(sh) { return `<div class="thumb${sh.photo && sh.photoCut ? ' cut' : ''}" style="${calVars(sh.colorIdx)}">${sh.photo ? `<img src="${esc(sh.photo)}" alt="">` : esc(initials(sh.name))}</div>`; }
 
 function card(sh) {
   const s = stats(sh), warns = [];
   if (!sh.retired) {
-    if (s.pct >= 1) warns.push(['', 'Past its limit — time to replace']);
-    else if (s.pct >= .9) warns.push(['', `${fmtKm(sh.limitKm - s.km)} km left — shop for a replacement`]);
-    if (s.months >= S.ageMonths) warns.push(['age', `Over ${S.ageMonths} months old — foam ages even without km`]);
+    if (s.pct >= 1) warns.push('Past its limit — time to replace');
+    else if (s.pct >= .9) warns.push(`${fmtD(sh.limitKm - s.km)} ${U()} left — shop for a replacement`);
   }
   const when = sh.retired ? `${fmtDate(sh.start)} → ${fmtDate(sh.retired)} (${ageStr(s.months)})` : ageStr(s.months) + ' old';
   return `<button class="card" data-shoe="${sh.id}">${thumb(sh)}
     <div class="info">
       <div class="top"><span class="name">${esc(sh.name)}</span>${!sh.retired && S.defaultShoeId === sh.id ? '<span class="star" title="Default shoe">★</span>' : ''}${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}</div>
       <div class="bar"><i style="width:${Math.min(s.pct, 1) * 100}%;background:${color(s.pct)}"></i></div>
-      <div class="meta"><b>${fmtKm(s.km)}</b> / ${fmtKm(sh.limitKm)} km · ${Math.round(s.pct * 100)}% · ${s.n} run${s.n === 1 ? '' : 's'}</div>
-      <div class="meta">${when}${s.cpk != null ? ` · ${money(s.cpk)}/km` : ''}</div>
-      ${warns.map(([c, w]) => `<div class="warn ${c}">${esc(w)}</div>`).join('')}
+      <div class="meta"><b>${fmtD(s.km)}</b> / ${fmtD(sh.limitKm)} ${U()} · ${Math.round(s.pct * 100)}% · ${s.n} run${s.n === 1 ? '' : 's'}</div>
+      <div class="meta">${when}${s.cpk != null ? ` · ${money(s.cpk)}/${U()}` : ''}</div>
+      ${warns.map(w => `<div class="warn">${esc(w)}</div>`).join('')}
     </div></button>`;
 }
 
@@ -471,7 +556,7 @@ function viewShoes() {
   const alerts = [];
   for (const sh of sorted) {
     const s = stats(sh);
-    if (s.pct >= 1) alerts.push(`<div class="alert">${esc(sh.name)} is past ${fmtKm(sh.limitKm)} km. Retire it.</div>`);
+    if (s.pct >= 1) alerts.push(`<div class="alert">${esc(sh.name)} is past ${fmtD(sh.limitKm)} ${U()}. Retire it.</div>`);
     else if (s.pct >= .9) alerts.push(`<div class="alert w">${esc(sh.name)} is at ${Math.round(s.pct * 100)}%. Replace soon.</div>`);
   }
   return (alerts.length ? `<div class="alerts">${alerts.join('')}</div>` : '') + `<div class="list">${sorted.map(card).join('')}</div>`;
@@ -482,7 +567,7 @@ function viewRetired() {
   if (!list.length) return `<div class="empty">No retired shoes yet.<br>Tap a shoe and choose “Retire” when it's done.</div>`;
   const total = list.reduce((a, sh) => a + stats(sh).km, 0);
   return `<div class="summary"><div class="stat"><div class="v">${list.length}</div><div class="l">pairs retired</div></div>
-    <div class="stat"><div class="v">${fmtKm(total / list.length)}</div><div class="l">avg km per pair</div></div></div>
+    <div class="stat"><div class="v">${fmtD(total / list.length)}</div><div class="l">avg ${U()} per pair</div></div></div>
     <div class="list">${list.map(card).join('')}</div>`;
 }
 
@@ -491,17 +576,17 @@ function viewRuns() {
   if (!runs.length) return `<div class="empty">No runs logged yet.<br>Tap “+ Run” after each run.</div>`;
   const ym = today().slice(0, 7), y = today().slice(0, 4);
   const sum = f => runs.filter(f).reduce((a, r) => a + r.km, 0);
-  let html = `<div class="summary"><div class="stat"><div class="v">${fmtKm(sum(r => r.date.startsWith(ym)))}</div><div class="l">km this month</div></div>
-    <div class="stat"><div class="v">${fmtKm(sum(r => r.date.startsWith(y)))}</div><div class="l">km this year</div></div></div>`;
+  let html = `<div class="summary"><div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(ym)))}</div><div class="l">${U()} this month</div></div>
+    <div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(y)))}</div><div class="l">${U()} this year</div></div></div>`;
   const groups = new Map();
   for (const r of runs) { const k = r.date.slice(0, 7); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
   for (const [k, rs] of groups) {
     const label = new Date(k + '-01T00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-    html += `<div class="month"><span>${label}</span><span>${fmtKm(rs.reduce((a, r) => a + r.km, 0))} km</span></div><div class="runs">`;
+    html += `<div class="month"><span>${label}</span><span>${fmtD(rs.reduce((a, r) => a + r.km, 0))} ${U()}</span></div><div class="runs">`;
     for (const r of rs) {
-      const sh = shoeById(r.shoeId);
+      const sh = calShoe(r.shoeId);
       const d = new Date(r.date + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', weekday: 'short' });
-      html += `<div class="run" data-run="${r.id}"><span class="d">${d}</span><span class="s">${esc(sh ? sh.name : '(deleted shoe)')}</span><span class="k">${fmtKm(r.km)} km</span></div>`;
+      html += `<div class="run" data-run="${r.id}"><span class="d">${d}</span><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span><span class="k">${fmtD(r.km)} ${U()}</span></div>`;
     }
     html += '</div>';
   }
@@ -509,20 +594,16 @@ function viewRuns() {
 }
 
 // ---------- calendar ----------
-// Shoe palette by colorIdx. soft: [cell fill, dot]; contrast: [fill, text on it].
-const CAL_PAL = {
-  soft: [['#DCE6F0', '#9FB6CF'], ['#E9E2F2', '#BCA9D6'], ['#F6E0E4', '#E3A7B2'], ['#E1E8DC', '#A9BC9D'], ['#F4E6D8', '#D9B38C'], ['#EDEBE8', '#9C9A98']],
-  contrast: [['#D4F23C', '#0A0A0A'], ['#FFFFFF', '#0A0A0A'], ['#FF6B98', '#0A0A0A'], ['#2D46F5', '#FFFFFF'], ['#FF9F1C', '#0A0A0A'], ['#3DDCFF', '#0A0A0A']],
-};
-const CAL_NAMES = { soft: ['Blue', 'Lilac', 'Rose', 'Sage', 'Sand', 'Grey'], contrast: ['Volt', 'White', 'Pink', 'Blue', 'Orange', 'Cyan'] };
-const THEME_COLOR = $('meta[name=theme-color]').content;
-const calPal = idx => CAL_PAL[S.calTheme][validColor(idx) ? idx : 0];
-const calVars = idx => { const [c, k] = calPal(idx); return `--c:${c};--k:${k}`; };
-const calDot = idx => calPal(idx)[S.calTheme === 'soft' ? 1 : 0];
-const calShoe = id => { const sh = shoeById(id); return sh ? { name: sh.name, type: sh.type || '', idx: sh.colorIdx, code: initials(sh.name) } : { name: '(deleted shoe)', type: '', idx: 0, code: '?' }; };
-const km1 = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const loc = (d, o) => d.toLocaleDateString(undefined, o);
 const CHEV = d => `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"></path></svg>`;
+// "Nov 1–7", "8–14", "29–Dec 5": the month is named on the first row and wherever it changes.
+function weekLabels(weeks) {
+  const md = d => loc(d, { month: 'short', day: 'numeric' }), dd = d => loc(d, { day: 'numeric' });
+  return weeks.map((w, i) => {
+    const f = pd(w.from), t = pd(w.to), newMonth = i === 0 || f.getMonth() !== pd(weeks[i - 1].to).getMonth();
+    return (newMonth ? md(f) : dd(f)) + '–' + (t.getMonth() !== f.getMonth() ? md(t) : dd(t));
+  });
+}
+const cellD = km => kmTo(km, S.unit) >= 100 ? String(Math.round(kmTo(km, S.unit))) : d1(km);
 
 function viewCalendar() {
   if (!S.shoes.length) return viewShoes();
@@ -533,33 +614,30 @@ function viewCalendar() {
     <div class="cal-nav"><button type="button" data-cal="prev" aria-label="Previous month">${CHEV('M15 5l-7 7 7 7')}</button><button type="button" data-cal="next" aria-label="Next month">${CHEV('M9 5l7 7-7 7')}</button></div></div>`;
   const runsLbl = sum.count === 1 ? 'run' : 'runs';
   const stats = soft
-    ? `<div class="cal-stats"><span class="k">${km1(sum.km)} km</span><span>${sum.count} ${runsLbl}</span>${streak >= 2 ? `<span>${streak}-week streak</span>` : ''}</div>`
-    : `<div class="cal-stats"><div><small>KM</small><b>${km1(sum.km)}</b></div><div><small>${runsLbl.toUpperCase()}</small><b>${sum.count}</b></div>${streak >= 2 ? `<div><small>STREAK WK</small><b>${streak}</b></div>` : ''}</div>`;
+    ? `<div class="cal-stats"><span class="k">${d1(sum.km)} ${U()}</span><span>${sum.count} ${runsLbl}</span>${streak >= 2 ? `<span>${streak}-week streak</span>` : ''}</div>`
+    : `<div class="cal-stats"><div><small>${U().toUpperCase()}</small><b>${d1(sum.km)}</b></div><div><small>${runsLbl.toUpperCase()}</small><b>${sum.count}</b></div>${streak >= 2 ? `<div><small>STREAK WK</small><b>${streak}</b></div>` : ''}</div>`;
   const wd = `<div class="cal-wd" aria-hidden="true">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span>${esc(loc(new Date(2023, 0, 1 + ws + i), { weekday: 'short' }))}</span>`).join('')}</div>`;
   const cell = date => {
     if (!date) return '<span></span>';
     const d = days.get(date), n = +date.slice(8), isToday = date === td, cls = ['cal-day'];
-    let label = loc(pd(date), { weekday: 'long', month: 'long', day: 'numeric' }), style = '', km = '', code = '', more = '';
+    let label = loc(pd(date), { weekday: 'long', month: 'long', day: 'numeric' }), style = '', body = '<span></span>', code = '', more = '';
     if (d) {
-      const sh = calShoe(d.mainShoeId);
-      cls.push('run'); style = ` style="${calVars(sh.idx)}"`;
-      km = `<span class="km">${d.km >= 100 ? Math.round(d.km) : km1(d.km)}</span>`; code = `<span class="code">${esc(sh.code)}</span>`;
+      const sh = calShoe(d.mainShoeId), pic = S.calCell === 'photo' && sh.photo;
+      cls.push('run'); if (pic) cls.push('pic'); style = ` style="${calVars(sh.idx)}"`;
+      body = pic ? `<span class="ph${sh.cut ? '' : ' sq'}" data-s="${esc(d.mainShoeId)}"></span>` : `<span class="km">${cellD(d.km)}</span>`;
+      code = `<span class="code">${esc(sh.code)}</span>`;
       if (d.runs.length > 1) more = `<span class="more">+${d.runs.length - 1}</span>`;
-      label += `: ${km1(d.km)} km, ${[...new Set(d.runs.map(r => calShoe(r.shoeId).name))].join(', ')}${d.runs.length > 1 ? `, ${d.runs.length} runs` : ''}`;
+      label += `: ${d1(d.km)} ${U()}, ${[...new Set(d.runs.map(r => calShoe(r.shoeId).name))].join(', ')}${d.runs.length > 1 ? `, ${d.runs.length} runs` : ''}`;
     } else if (date > td) cls.push('fut');
     if (isToday) cls.push('today');
-    const inner = soft ? `<span class="n">${n}</span>${more}${km || '<span></span>'}` : `<span class="top"><span class="n">${pad2(n)}</span>${more || code}</span>${km || '<span></span>'}`;
+    const inner = soft ? `<span class="n">${n}</span>${more}${body}` : `<span class="top"><span class="n">${pad2(n)}</span>${more || code}</span>${body}`;
     return `<button type="button" class="${cls.join(' ')}" data-day="${date}" tabindex="${date === focusDay ? 0 : -1}" aria-label="${esc(label)}"${isToday ? ' aria-current="date"' : ''}${style}>${inner}</button>`;
   };
   const grid = `<div class="cal-grid${calAnim ? ' anim' : ''}">${monthGrid(calMonth, ws).flat().map(cell).join('')}</div>`;
-  const legend = sum.byShoe.length ? `<div class="cal-legend">${sum.byShoe.map(e => { const sh = calShoe(e.shoeId); return `<span><i style="${calVars(sh.idx)}">${soft ? '' : esc(sh.code)}</i>${esc(sh.name)} <b>${km1(e.km)}</b></span>`; }).join('')}</div>` : '';
-  const max = Math.max(...weeks.map(w => w.km));
-  const md = d => loc(d, { month: 'short', day: 'numeric' }), dd = d => loc(d, { day: 'numeric' });
-  const rows = weeks.map((w, i) => {
-    const f = pd(w.from), t = pd(w.to), newMonth = i === 0 || f.getMonth() !== pd(weeks[i - 1].to).getMonth();
-    return `<span class="l">${esc((newMonth ? md(f) : dd(f)) + '–' + (t.getMonth() !== f.getMonth() ? md(t) : dd(t)))}</span><span class="t">${w.km > 0 ? `<i style="width:${Math.round(w.km / max * 100)}%"></i>` : ''}</span><span class="v">${w.km > 0 ? km1(w.km) : soft ? '–' : '--'}</span>`;
-  }).join('');
-  return `<div class="calv">${head}${stats}<div class="cal-block">${wd}${grid}</div>${legend}<section class="cal-weeks"><h3>Weekly km</h3><div class="cal-rows">${rows}</div></section></div>`;
+  const legend = sum.byShoe.length ? `<div class="cal-legend">${sum.byShoe.map(e => { const sh = calShoe(e.shoeId); return `<span><i style="${calVars(sh.idx)}">${soft ? '' : esc(sh.code)}</i>${esc(sh.name)} <b>${d1(e.km)}</b></span>`; }).join('')}</div>` : '';
+  const max = Math.max(...weeks.map(w => w.km)), labels = weekLabels(weeks);
+  const rows = weeks.map((w, i) => `<span class="l">${esc(labels[i])}</span><span class="t">${w.km > 0 ? `<i style="width:${Math.round(w.km / max * 100)}%"></i>` : ''}</span><span class="v">${w.km > 0 ? d1(w.km) : soft ? '–' : '--'}</span>`).join('');
+  return `<div class="calv">${head}${stats}<div class="cal-block">${wd}${grid}</div>${legend}<section class="cal-weeks"><h3>Weekly ${U()}</h3><div class="cal-rows">${rows}</div></section></div>`;
 }
 
 // Long month names ("September") or narrow screens: shrink the month name until the header row fits.
@@ -577,82 +655,337 @@ function openDay(date) {
   const d = dayIndex(S.runs).get(date);
   $('#dayTitle').textContent = loc(pd(date), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   $('#dayBody').innerHTML = d
-    ? `<div class="daysum"><b>${km1(d.km)} km</b> total</div><div class="runs">${d.runs.map(r => { const sh = calShoe(r.shoeId); return `<button type="button" class="run" data-run="${r.id}"><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span>${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}<span class="k">${km1(r.km)} km</span></button>`; }).join('')}</div>`
+    ? `<div class="daysum"><b>${d1(d.km)} ${U()}</b> total</div><div class="runs">${d.runs.map(r => { const sh = calShoe(r.shoeId); return `<button type="button" class="run" data-run="${r.id}"><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span>${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}<span class="k">${d1(r.km)} ${U()}</span></button>`; }).join('')}</div>`
     : '<div class="empty">No run logged on this day.</div>';
   $('#dayDlg').showModal();
 }
 $('#dayBody').onclick = e => { const r = e.target.closest('[data-run]'); if (r) { $('#dayDlg').close(); openRun(r.dataset.run); } };
 $('#dayAdd').onclick = () => { $('#dayDlg').close(); openRun(null, dayDate); };
-$('#calStyleBtn').onclick = () => { S.calTheme = S.calTheme === 'soft' ? 'contrast' : 'soft'; save(); render(); };
+$('#styleBtn').onclick = () => { S.calTheme = S.calTheme === 'soft' ? 'contrast' : 'soft'; save(); render(); };
 
 function render() {
   const cal = tab === 'calendar', soft = S.calTheme === 'soft', hadDay = cal && document.activeElement && document.activeElement.matches('.cal-day');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  document.body.classList.toggle('cal', cal);
-  document.body.classList.toggle('cal-soft', cal && soft);
-  document.body.classList.toggle('cal-contrast', cal && !soft);
-  $('meta[name=theme-color]').content = !cal ? THEME_COLOR : soft ? '#FFFFFF' : '#0A0A0A';
-  $('#calStyleBtn').setAttribute('aria-label', `Calendar style: ${soft ? 'Soft' : 'Contrast'}. Switch to ${soft ? 'Contrast' : 'Soft'}`);
+  document.body.className = `look-${S.calTheme}${cal ? ' cal' : ''}`;
+  $('meta[name=theme-color]').content = soft ? '#FFFFFF' : '#0A0A0A';
+  $('#styleBtn').setAttribute('aria-label', `Style: ${soft ? 'Soft' : 'Contrast'}. Switch to ${soft ? 'Contrast' : 'Soft'}`);
+  document.querySelectorAll('.u').forEach(e => e.textContent = U());
+  // shoe photos for calendar cells: one CSS rule per shoe, so a photo is not repeated in every cell
+  $('#pics').textContent = cal && S.calCell === 'photo' ? S.shoes.filter(s => s.photo && /^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(s.photo)).map(s => `.ph[data-s="${String(s.id).replace(/["\\\n]/g, '')}"]{background-image:url("${s.photo}")}`).join('') : '';
   $('#view').innerHTML = tab === 'shoes' ? viewShoes() : tab === 'calendar' ? viewCalendar() : tab === 'runs' ? viewRuns() : viewRetired();
   calAnim = false;
   fitMonth();
   if (hadDay) { const c = $('.cal-day[tabindex="0"]'); if (c) c.focus(); }
 }
 
+// ---------- share the month as a picture ----------
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+// Draws the calendar of calMonth in the current look. Coordinates are the on-screen design px (content 358 wide), scaled up to 1080x1920.
+async function shareCanvas() {
+  const soft = S.calTheme === 'soft', W = 1080, H = 1920, cw = 358;
+  const SANS = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', SERIF = 'Georgia,"Times New Roman",serif', DISP = '"Archivo Black","Arial Black",Impact,sans-serif', MONO = '"Space Mono",ui-monospace,Menlo,Consolas,monospace';
+  const T = soft ? { bg: '#FFFFFF', ink: '#2B2522', muted: '#5E5550', faint: '#6F6560', line: '#E7E1DC', track: '#F3EFEC', accent: '#4E6485', bar: '#9FB6CF' }
+    : { bg: '#0A0A0A', ink: '#FFFFFF', muted: '#A3A3A3', faint: '#808080', line: '#3A3A3A', track: '#1C1C1C', accent: '#D4F23C', bar: '#D4F23C' };
+  if (!soft && document.fonts) await Promise.all(['400 84px "Archivo Black"', '700 12px "Space Mono"'].map(f => document.fonts.load(f))).catch(() => {});
+  const ws = S.weekStart, td = today(), first = pd(calMonth), grid = monthGrid(calMonth, ws);
+  const days = dayIndex(S.runs), sum = monthSummary(S.runs, calMonth), weeks = weekTotals(S.runs, calMonth, ws), streak = weekStreak(S.runs, td, ws);
+  const pics = new Map();
+  if (S.calCell === 'photo') for (const sh of S.shoes) if (sh.photo) { try { pics.set(sh.id, await loadImg(sh.photo)); } catch (e) {} }
+
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const setFont = (font, ls) => { c.font = font; if ('letterSpacing' in c) c.letterSpacing = (ls || 0) + 'px'; };
+  const meas = (s, font, ls) => { setFont(font, ls); return c.measureText(s).width; };
+  const text = (s, x, y, font, col, align, ls) => { setFont(font, ls); c.fillStyle = col; c.textAlign = align || 'left'; c.fillText(s, x, y); return c.measureText(s).width; };
+  const box = (x, y, w, h, r) => {
+    c.beginPath();
+    if (!r) return c.rect(x, y, w, h);
+    r = Math.min(r, w / 2, h / 2);
+    c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  };
+  const fill = col => { c.fillStyle = col; c.fill(); };
+  const stroke = (col, lw, dash) => { c.strokeStyle = col; c.lineWidth = lw; c.setLineDash(dash || []); c.stroke(); c.setLineDash([]); };
+  const picture = (img, x, y, w, h, cover) => {
+    const s = (cover ? Math.max : Math.min)(w / img.width, h / img.height), dw = img.width * s, dh = img.height * s;
+    c.save(); box(x, y, w, h, cover && soft ? 8 : 0); c.clip(); c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); c.restore();
+  };
+
+  // legend: flow layout, measured first so the whole picture can be sized
+  const legFont = soft ? `12px ${SANS}` : `700 11px ${MONO}`, legBold = soft ? `700 12px ${SANS}` : legFont, legGap = soft ? 14 : 12;
+  const leg = sum.byShoe.map(e => {
+    const sh = calShoe(e.shoeId), name = soft ? sh.name : sh.name.toUpperCase(), km = d1(e.km), mark = soft ? 10 : Math.max(22, meas(sh.code, `700 9px ${MONO}`) + 6);
+    return { sh, name, km, mark, w: mark + 6 + meas(name + ' ', legFont) + meas(km, legBold) };
+  });
+  let lx = 0, lines = leg.length ? 1 : 0;
+  for (const it of leg) { if (lx && lx + it.w > cw) { lines++; lx = 0; } it.x = lx; it.line = lines - 1; lx += it.w + legGap; }
+
+  const hTitle = soft ? 50 : 68, hStats = soft ? 36 : 63, hGrid = grid.length * 58 + (grid.length - 1) * 6, hLeg = lines ? lines * 16 + (lines - 1) * 6 + 14 : 0, hWeeks = 25 + weeks.length * 24 - 2;
+  const total = hTitle + 14 + hStats + 14 + 21 + hGrid + 14 + hLeg + hWeeks + 28 + 12;
+  const k = Math.min(2.6, (H - 140) / total), x0 = (W / k - cw) / 2;
+  let y = (H / k - total) / 2;
+  c.fillStyle = T.bg; c.fillRect(0, 0, W, H);
+  c.scale(k, k); c.textBaseline = 'alphabetic';
+
+  // month and year
+  if (soft) { const w = text(loc(first, { month: 'long' }), x0, y + 41, `italic 500 52px ${SERIF}`, T.ink, 'left', -1.5); text(String(first.getFullYear()), x0 + w + 10, y + 41, `600 17px ${SANS}`, T.accent); }
+  else { const w = text(loc(first, { month: 'short' }).toUpperCase(), x0, y + 64, `400 84px ${DISP}`, T.ink, 'left', -3); text(String(first.getFullYear()), x0 + w + 8, y + 62, `700 15px ${MONO}`, T.accent); }
+  y += hTitle + 14;
+
+  // stats
+  const runsLbl = sum.count === 1 ? 'run' : 'runs';
+  if (soft) {
+    let x = x0;
+    [`${d1(sum.km)} ${U()}`, `${sum.count} ${runsLbl}`, streak >= 2 ? `${streak}-week streak` : ''].filter(Boolean).forEach((s, i) => {
+      const w = meas(s, `600 13px ${SANS}`) + 28;
+      if (i === 0) { box(x, y + 1, w, 34, 17); fill(T.ink); } else { box(x + .75, y + .75, w - 1.5, 34.5, 17.25); stroke(T.line, 1.5); }
+      text(s, x + 14, y + 22.5, `600 13px ${SANS}`, i === 0 ? '#FFFFFF' : T.ink);
+      x += w + 8;
+    });
+  } else {
+    const items = [[U().toUpperCase(), d1(sum.km)], [runsLbl.toUpperCase(), String(sum.count)]]; if (streak >= 2) items.push(['STREAK WK', String(streak)]);
+    const bw = cw / items.length;
+    box(x0, y, bw, hStats); fill(T.accent);
+    items.forEach(([l, v], i) => {
+      if (i) { box(x0 + i * bw - 1, y, 2, hStats); fill('#FFFFFF'); }
+      text(l, x0 + i * bw + 12, y + 20, `700 10px ${MONO}`, i ? T.muted : '#0A0A0A'); text(v, x0 + i * bw + 12, y + 49, `400 26px ${DISP}`, i ? T.ink : '#0A0A0A');
+    });
+    box(x0 + 1, y + 1, cw - 2, hStats - 2); stroke('#FFFFFF', 2);
+  }
+  y += hStats + 14;
+
+  // weekday names
+  const cellW = (cw - 36) / 7;
+  for (let i = 0; i < 7; i++) {
+    const s = loc(new Date(2023, 0, 1 + ws + i), { weekday: 'short' }), x = x0 + i * (cellW + 6);
+    if (soft) text(s, x + cellW / 2, y + 11, `600 11px ${SANS}`, i ? T.faint : T.accent, 'center');
+    else text(s.toUpperCase(), x, y + 11, `700 10px ${MONO}`, i ? T.muted : T.accent);
+  }
+  y += 21;
+
+  // days
+  grid.forEach((week, r) => week.forEach((date, i) => {
+    if (!date) return;
+    const x = x0 + i * (cellW + 6), cy = y + r * 64, d = days.get(date), n = +date.slice(8), isToday = date === td, fut = !d && date > td;
+    const sh = d && calShoe(d.mainShoeId), pal = d && calPal(sh.idx), img = d && pics.get(d.mainShoeId), more = d && d.runs.length > 1 ? `+${d.runs.length - 1}` : '';
+    if (soft) {
+      if (d) { box(x, cy, cellW, 58, 14); fill(pal[0]); } else if (fut) { box(x, cy, cellW, 58, 14); fill('#FAF8F6'); } else { box(x + .5, cy + .5, cellW - 1, 57, 13.5); fill('#FFFFFF'); stroke(T.line, 1); }
+      const ink = d ? T.ink : T.faint;
+      if (img) {
+        if (isToday) { c.beginPath(); c.arc(x + 11, cy + 11, 8, 0, 7); fill(T.accent); }
+        text(String(n), isToday ? x + 11 : x + 5, cy + 14.5, `${isToday ? 700 : 600} 10px ${SANS}`, isToday ? '#FFFFFF' : ink, isToday ? 'center' : 'left');
+        if (sh.cut) picture(img, x + 3, cy + 16, cellW - 6, 38); else picture(img, x + 6, cy + 18, cellW - 12, 35, true);
+      } else {
+        if (isToday) { c.beginPath(); c.arc(x + cellW / 2, cy + 16, 10, 0, 7); fill(T.accent); }
+        text(String(n), x + cellW / 2, cy + 20, `${isToday ? 700 : 600} 11px ${SANS}`, isToday ? '#FFFFFF' : ink, 'center');
+        if (d) text(cellD(d.km), x + cellW / 2, cy + 47, `700 14px ${SANS}`, T.ink, 'center', -.2);
+      }
+      if (more) text(more, x + cellW - 5, cy + 13, `700 9px ${SANS}`, T.ink, 'right');
+    } else {
+      let ink = d ? pal[1] : fut ? '#808080' : '#A3A3A3';
+      if (d && img) { box(x + 1, cy + 1, cellW - 2, 56); fill('#0A0A0A'); stroke(pal[0], 2); ink = '#FFFFFF'; }
+      else if (d) { box(x, cy, cellW, 58); fill(pal[0]); }
+      else { box(x + .5, cy + .5, cellW - 1, 57); stroke(fut ? '#2A2A2A' : '#3A3A3A', 1, fut ? [3, 2] : null); }
+      if (isToday) { box(x - 3, cy - 3, cellW + 6, 64); stroke('#FFFFFF', 2); }
+      text(pad2(n), x + 5, cy + 14, `700 10px ${MONO}`, ink);
+      if (d) text(more || sh.code, x + cellW - 5, cy + 14, `700 9px ${MONO}`, ink, 'right');
+      if (img) { if (sh.cut) picture(img, x + 4, cy + 17, cellW - 8, 37); else picture(img, x + 6, cy + 18, cellW - 12, 35, true); }
+      else if (d) text(cellD(d.km), x + 5, cy + 51, `400 14px ${DISP}`, ink, 'left', -.4);
+    }
+  }));
+  y += hGrid + 14;
+
+  // legend
+  for (const it of leg) {
+    const bx = x0 + it.x, by = y + it.line * 22, pal = calPal(it.sh.idx);
+    if (soft) { c.beginPath(); c.arc(bx + 5, by + 8, 5, 0, 7); fill(pal[1]); }
+    else { box(bx, by, it.mark, 16); fill(pal[0]); text(it.sh.code, bx + it.mark / 2, by + 11.5, `700 9px ${MONO}`, pal[1], 'center'); }
+    const w = text(it.name + ' ', bx + it.mark + 6, by + 12, legFont, T.muted);
+    text(it.km, bx + it.mark + 6 + w, by + 12, legBold, T.ink);
+  }
+  y += hLeg;
+
+  // weekly distance
+  if (soft) text(`Weekly ${U()}`, x0, y + 13, `700 13px ${SANS}`, T.ink); else text(`WEEKLY ${U().toUpperCase()}`, x0, y + 14, `400 14px ${DISP}`, T.ink, 'left', .5);
+  y += 25;
+  const labFont = soft ? `12px ${SANS}` : `700 11px ${MONO}`, labels = weekLabels(weeks).map(s => soft ? s : s.toUpperCase());
+  const labW = Math.max(soft ? 74 : 78, ...labels.map(s => meas(s, labFont))), valW = soft ? 36 : 40, tx = x0 + labW + 10, tw = cw - labW - valW - 20, max = Math.max(...weeks.map(w => w.km));
+  weeks.forEach((w, i) => {
+    const ry = y + i * 24;
+    text(labels[i], x0, ry + 15, labFont, T.muted);
+    if (soft) { box(tx, ry + 6, tw, 10, 5); fill(T.track); if (w.km > 0) { box(tx, ry + 6, Math.max(10, tw * w.km / max), 10, 5); fill(T.bar); } }
+    else { box(tx, ry + 4, tw, 14); fill(T.track); if (w.km > 0) { box(tx, ry + 4, tw * w.km / max, 14); fill(T.bar); } }
+    text(w.km > 0 ? d1(w.km) : soft ? '–' : '--', x0 + cw, ry + 16, soft ? `700 13px ${SANS}` : `700 13px ${MONO}`, T.ink, 'right');
+  });
+  y += weeks.length * 24 - 2 + 28;
+  if (soft) text('Shoe Tracker', x0 + cw / 2, y + 10, `600 11px ${SANS}`, T.faint, 'center'); else text('SHOE TRACKER', x0 + cw / 2, y + 10, `700 10px ${MONO}`, T.faint, 'center', .5);
+  return cv;
+}
+let shareBlob = null;
+const shareFile = () => new File([shareBlob], `shoe-tracker-${calMonth}.png`, { type: 'image/png' });
+$('#shareBtn').onclick = async () => {
+  if (!S.shoes.length) return toast('Add a shoe first');
+  toast('Making the picture…');
+  try {
+    const cv = await shareCanvas();
+    shareBlob = await new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(), 'image/png'));
+    const img = $('#shareImg'); if (img.src) URL.revokeObjectURL(img.src); img.src = URL.createObjectURL(shareBlob);
+    $('#shareGo').hidden = !(navigator.canShare && navigator.canShare({ files: [shareFile()] }));
+    $('#shareDlg').showModal();
+  } catch (e) { toast('Could not make the picture'); }
+};
+$('#shareSave').onclick = () => download(`shoe-tracker-${calMonth}.png`, shareBlob, 'image/png');
+$('#shareGo').onclick = async () => {
+  try { await navigator.share({ files: [shareFile()], title: 'Shoe Tracker' }); }
+  catch (e) { if (!e || e.name !== 'AbortError') toast('Sharing did not work here. Use “Save image” instead.'); }
+};
+
 // ---------- toast ----------
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3500); }
 
+// ---------- shoe photo: thumbnail and cut-out ----------
+function squareThumb(img, size) {
+  const s = Math.min(img.width, img.height), c = document.createElement('canvas');
+  c.width = c.height = size;
+  c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+  return c.toDataURL('image/jpeg', .75);
+}
+// Removes a plain, even background (white, grey, one colour) around the shoe, entirely on the device.
+// Ported from ballet closet's cutout.js. Returns a cropped canvas, or null for busy backgrounds.
+// A picture that is already transparent (for example a subject lifted out in the phone's photo app) is only cropped.
+function cutout(canvas) {
+  const w = canvas.width, h = canvas.height, ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const image = ctx.getImageData(0, 0, w, h), px = image.data, total = w * h;
+  const border = [];
+  for (let x = 0; x < w; x++) border.push(x, (h - 1) * w + x);
+  for (let y = 1; y < h - 1; y++) border.push(y * w, y * w + w - 1);
+  const opaque = border.filter(i => px[i * 4 + 3] > 200);
+  let minX = w, minY = h, maxX = -1, maxY = -1, kept = 0;
+  const grow = i => { const x = i % w, y = (i / w) | 0; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; kept++; };
+  if (opaque.length < border.length * .5) {
+    for (let i = 0; i < total; i++) if (px[i * 4 + 3] > 24) grow(i);
+  } else {
+    // 1. The background colour is the median of the border pixels; the border must be mostly that colour.
+    const median = ch => { const v = opaque.map(i => px[i * 4 + ch]).sort((a, b) => a - b); return v[v.length >> 1]; };
+    const bg = [median(0), median(1), median(2)];
+    const dist = i => { const o = i * 4, dr = px[o] - bg[0], dg = px[o + 1] - bg[1], db = px[o + 2] - bg[2]; return Math.sqrt(dr * dr + dg * dg + db * db); };
+    const close = opaque.map(dist).filter(d => d < 34);
+    if (close.length < opaque.length * .72) return null;
+    const noise = close.reduce((a, d) => a + d, 0) / close.length, tol = Math.min(44, Math.max(20, noise * 2.4 + 14));
+    // 2. Flood-fill the background inwards from the border, so the shoe itself is never touched.
+    const back = new Uint8Array(total), queue = new Int32Array(total); let head = 0, tail = 0;
+    const isBack = i => px[i * 4 + 3] < 24 || dist(i) < tol;
+    for (const i of border) if (!back[i] && isBack(i)) { back[i] = 1; queue[tail++] = i; }
+    while (head < tail) {
+      const i = queue[head++], x = i % w;
+      for (const n of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, i - w, i + w]) if (n >= 0 && n < total && !back[n] && isBack(n)) { back[n] = 1; queue[tail++] = n; }
+    }
+    // 2b. Background trapped inside the shoe (through the laces, under a heel loop) can't be reached from the border.
+    //     Clear those pockets too when they are clearly background-coloured and small next to the shoe.
+    const reached = total - tail, seen = new Uint8Array(total), pocket = new Int32Array(total);
+    for (let start = 0; start < total; start++) {
+      if (back[start] || seen[start] || dist(start) >= tol) continue;
+      let ph = 0, pt = 0, sum = 0; pocket[pt++] = start; seen[start] = 1;
+      while (ph < pt) {
+        const i = pocket[ph++], x = i % w; sum += dist(i);
+        for (const n of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, i - w, i + w]) if (n >= 0 && n < total && !back[n] && !seen[n] && dist(n) < tol) { seen[n] = 1; pocket[pt++] = n; }
+      }
+      if (pt >= 12 && pt <= reached * .25 && sum / pt < tol * .5) for (let k = 0; k < pt; k++) back[pocket[k]] = 1;
+    }
+    // 3. Alpha: clear the background and soften the one-pixel edge so it doesn't look jagged or haloed.
+    for (let i = 0; i < total; i++) {
+      const o = i * 4;
+      if (back[i]) { px[o + 3] = 0; continue; }
+      const x = i % w, y = (i / w) | 0;
+      if ((x > 0 && back[i - 1]) || (x < w - 1 && back[i + 1]) || (y > 0 && back[i - w]) || (y < h - 1 && back[i + w])) {
+        const a = Math.min(1, Math.max(.35, (dist(i) - tol * .5) / tol));
+        if (a < 1) for (let ch = 0; ch < 3; ch++) px[o + ch] = Math.max(0, Math.min(255, Math.round((px[o + ch] - (1 - a) * bg[ch]) / a)));
+        px[o + 3] = Math.round(px[o + 3] * a);
+      }
+      grow(i);
+    }
+    ctx.putImageData(image, 0, 0);
+  }
+  if (kept < total * .03 || kept > total * .97) return null;   // nothing left, or nothing removed
+  // 4. Crop to the shoe with a little breathing room.
+  const pad = Math.round(Math.max(maxX - minX, maxY - minY) * .05), cx = Math.max(0, minX - pad), cy = Math.max(0, minY - pad);
+  const out = document.createElement('canvas'); out.width = Math.min(w, maxX + pad + 1) - cx; out.height = Math.min(h, maxY + pad + 1) - cy;
+  out.getContext('2d').drawImage(canvas, cx, cy, out.width, out.height, 0, 0, out.width, out.height);
+  return out;
+}
+// A cut-out PNG of the shoe (at most 240px), or null when the background can't be removed.
+function cutThumb(img) {
+  const s = Math.min(1, 600 / Math.max(img.width, img.height)), work = document.createElement('canvas');
+  work.width = Math.max(1, Math.round(img.width * s)); work.height = Math.max(1, Math.round(img.height * s));
+  work.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, work.width, work.height);
+  const cut = cutout(work); if (!cut) return null;
+  const t = Math.min(1, 240 / Math.max(cut.width, cut.height)), out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(cut.width * t)); out.height = Math.max(1, Math.round(cut.height * t));
+  out.getContext('2d').drawImage(cut, 0, 0, out.width, out.height);
+  return out.toDataURL('image/png');
+}
+
 // ---------- shoe dialog ----------
-let editShoe = null, pendingPhoto = null, pendingColor = 0;
+// ph: the photo being edited. orig = square JPEG, cut = transparent PNG, useCut = which one is saved, tried = cut-out was attempted.
+const noPhoto = () => ({ orig: null, cut: null, useCut: false, tried: false });
+let editShoe = null, ph = noPhoto(), pendingColor = 0;
+$('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
+function setPhotoPrev() {
+  const src = ph.useCut ? ph.cut : ph.orig, box = $('#sPhotoPrev'), b = $('#sPhotoCut');
+  box.className = 'thumb' + (src && ph.useCut ? ' cut' : '');
+  box.innerHTML = src ? `<img src="${esc(src)}" alt="">` : '👟';
+  $('#sPhotoDel').hidden = !src;
+  b.hidden = !src || (ph.useCut && !ph.orig) || (ph.tried && !ph.cut);
+  b.textContent = ph.useCut ? 'Original' : 'Cut out';
+  $('#sPhotoNote').textContent = !src ? 'A cut-out photo can be shown on the calendar. Cutting out works on a plain, even background.'
+    : ph.tried && !ph.cut ? "Couldn't cut this one out: it needs a plain, even background. The original photo is kept."
+    : ph.useCut ? 'Background removed.' : '';
+}
 function setColors() {
   $('#sColors').innerHTML = CAL_PAL[S.calTheme].map(([c], i) => `<button type="button" class="sw" role="radio" aria-checked="${i === pendingColor}" aria-label="${CAL_NAMES[S.calTheme][i]}" data-color="${i}" style="--c:${c};--d:${calDot(i)}"><i></i></button>`).join('');
 }
 $('#sColors').onclick = e => { const b = e.target.closest('[data-color]'); if (b) { pendingColor = +b.dataset.color; setColors(); $(`#sColors [data-color="${pendingColor}"]`).focus(); } };
-$('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
-function setPhotoPrev() {
-  $('#sPhotoPrev').innerHTML = pendingPhoto ? `<img src="${esc(pendingPhoto)}" alt="">` : '👟';
-  $('#sPhotoDel').hidden = !pendingPhoto;
-}
 function openShoe(id) {
   editShoe = id ? shoeById(id) : null;
-  const sh = editShoe || { name: '', type: 'Daily', start: today(), startKm: 0, limitKm: 700, price: '' };
+  const sh = editShoe || { name: '', type: 'Daily', start: today(), startKm: 0, limitKm: S.limitKm, price: '' };
   $('#shoeTitle').textContent = editShoe ? 'Edit shoe' : 'Add shoe';
   $('#sName').value = sh.name; $('#sType').value = sh.type || 'Daily'; $('#sStart').value = sh.start;
-  $('#sStartKm').value = sh.startKm || 0; $('#sLimit').value = sh.limitKm; $('#sPrice').value = sh.price || '';
+  setD($('#sStartKm'), sh.startKm || 0, 1); setD($('#sLimit'), sh.limitKm, 0); $('#sPrice').value = sh.price || '';
   $('#curLbl').textContent = S.currency ? `(${S.currency})` : '';
   $('#sDefault').checked = editShoe ? S.defaultShoeId === sh.id : active().length === 0;
-  pendingPhoto = sh.photo || null; setPhotoPrev();
+  ph = !sh.photo ? noPhoto() : sh.photoCut ? { orig: null, cut: sh.photo, useCut: true, tried: true } : { orig: sh.photo, cut: null, useCut: false, tried: false };
+  setPhotoPrev();
   pendingColor = editShoe ? sh.colorIdx : freeColor(S.shoes, S.shoes.length); setColors();
   $('#sDelete').hidden = !editShoe; $('#sRetire').hidden = !editShoe;
   $('#sRetire').textContent = editShoe && editShoe.retired ? 'Un-retire' : 'Retire';
   $('#shoeDlg').showModal();
 }
 $('#sPhotoPick').onclick = () => $('#sPhoto').click();
-$('#sPhotoDel').onclick = () => { pendingPhoto = null; setPhotoPrev(); };
+$('#sPhotoDel').onclick = () => { ph = noPhoto(); setPhotoPrev(); };
 $('#sPhoto').onchange = async e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
-  try { pendingPhoto = await squareThumb(f, 240); setPhotoPrev(); } catch { toast('Could not read that image'); }
+  const url = URL.createObjectURL(f);
+  try {
+    const img = await loadImg(url);
+    ph = { orig: squareThumb(img, 240), cut: null, useCut: false, tried: true };
+    try { ph.cut = cutThumb(img); } catch (err) {}
+    ph.useCut = !!ph.cut; setPhotoPrev();
+  } catch (err) { toast('Could not read that image'); }
+  URL.revokeObjectURL(url);
 };
-function squareThumb(file, size) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.onload = () => {
-      const s = Math.min(img.width, img.height), c = document.createElement('canvas');
-      c.width = c.height = size;
-      c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
-      URL.revokeObjectURL(img.src); res(c.toDataURL('image/jpeg', .75));
-    };
-    img.onerror = rej; img.src = URL.createObjectURL(file);
-  });
-}
+$('#sPhotoCut').onclick = async () => {
+  if (ph.cut) ph.useCut = !ph.useCut;
+  else { try { ph.cut = cutThumb(await loadImg(ph.orig)); } catch (err) {} ph.tried = true; ph.useCut = !!ph.cut; }
+  setPhotoPrev();
+};
 $('#shoeForm').onsubmit = e => {
   e.preventDefault();
+  const useCut = !!(ph.useCut && ph.cut);
   const data = {
     name: $('#sName').value.trim(), type: $('#sType').value, start: $('#sStart').value,
-    startKm: Math.max(0, num($('#sStartKm').value)), limitKm: Math.max(1, num($('#sLimit').value)),
-    price: Math.max(0, num($('#sPrice').value)) || null, photo: pendingPhoto, colorIdx: pendingColor,
+    startKm: Math.max(0, getD($('#sStartKm'))), limitKm: Math.max(1, getD($('#sLimit'))),
+    price: Math.max(0, num($('#sPrice').value)) || null, photo: useCut ? ph.cut : ph.orig, photoCut: useCut, colorIdx: pendingColor,
   };
   if (!data.name) return;
   let sh = editShoe;
@@ -666,7 +999,7 @@ $('#sRetire').onclick = () => {
   else {
     if (!confirm(`Retire ${sh.name}? It moves to the Retired tab with its stats.`)) return;
     sh.retired = today(); if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
-    toast(`${sh.name} retired after ${fmtKm(stats(sh).km)} km`);
+    toast(`${sh.name} retired after ${fmtD(stats(sh).km)} ${U()}`);
   }
   save(); $('#shoeDlg').close(); render();
 };
@@ -689,27 +1022,27 @@ function openRun(id, date) {
   $('#rShoe').innerHTML = shoes.map(s => `<option value="${s.id}">${esc(s.name)}${s.retired ? ' (retired)' : ''}</option>`).join('');
   const lastShoe = [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0)).find(r => shoes.some(s => s.id === r.shoeId && !s.retired));
   $('#rShoe').value = editRun ? editRun.shoeId : (shoes.some(s => s.id === S.defaultShoeId) ? S.defaultShoeId : lastShoe ? lastShoe.shoeId : shoes[0].id);
-  $('#rKm').value = editRun ? editRun.km : ''; $('#rDate').value = editRun ? editRun.date : date || today();
+  setD($('#rKm'), editRun ? editRun.km : ''); $('#rDate').value = editRun ? editRun.date : date || today();
   $('#runTitle').textContent = editRun ? 'Edit run' : 'Log run';
   $('#rDelete').hidden = !editRun;
   // quick-pick chips from recent distances
   const seen = []; for (const r of [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0))) { if (!seen.includes(r.km)) seen.push(r.km); if (seen.length >= 6) break; }
-  $('#rChips').innerHTML = (seen.length ? seen : [5, 10, 21.1]).map(k => `<button type="button" class="chip" data-km="${k}">${fmtKm(k)} km</button>`).join('');
+  $('#rChips').innerHTML = (seen.length ? seen : [5, 10, 21.1]).map(k => `<button type="button" class="chip" data-km="${k}">${fmtD(k)} ${U()}</button>`).join('');
   $('#runDlg').showModal();
   if (!editRun) setTimeout(() => $('#rKm').focus(), 50);
 }
-$('#rChips').onclick = e => { const b = e.target.closest('[data-km]'); if (b) $('#rKm').value = b.dataset.km; };
+$('#rChips').onclick = e => { const b = e.target.closest('[data-km]'); if (b) setD($('#rKm'), +b.dataset.km); };
 $('#runForm').onsubmit = e => {
   e.preventDefault();
-  const km = num($('#rKm').value); if (km <= 0) return;
+  const km = getD($('#rKm')); if (!(km > 0)) return;
   const shoeId = $('#rShoe').value, sh = shoeById(shoeId), before = stats(sh).pct;
   if (editRun) Object.assign(editRun, { shoeId, km, date: $('#rDate').value });
   else S.runs.push({ id: uid(), shoeId, km, date: $('#rDate').value, t: Date.now() });
   save(); $('#runDlg').close(); render();
   const after = stats(sh).pct;
-  if (before < 1 && after >= 1) toast(`⚠️ ${sh.name} passed its ${fmtKm(sh.limitKm)} km limit. Time to retire it.`);
+  if (before < 1 && after >= 1) toast(`⚠️ ${sh.name} passed its ${fmtD(sh.limitKm)} ${U()} limit. Time to retire it.`);
   else if (before < .9 && after >= .9) toast(`⚠️ ${sh.name} is at ${Math.round(after * 100)}%. Start shopping for a replacement.`);
-  else if (!editRun) toast(`+${fmtKm(km)} km on ${sh.name} (${fmtKm(stats(sh).km)} total)`);
+  else if (!editRun) toast(`+${fmtD(km)} ${U()} on ${sh.name} (${fmtD(stats(sh).km)} total)`);
 };
 $('#rDelete').onclick = () => {
   if (!editRun || !confirm('Delete this run?')) return;
@@ -718,18 +1051,28 @@ $('#rDelete').onclick = () => {
 
 // ---------- settings / backup ----------
 function openSettings() {
-  $('#stAge').value = S.ageMonths; $('#stCur').value = S.currency; $('#stCal').value = S.calTheme; $('#stWeek').value = S.weekStart;
+  $('#stUnit').value = S.unit; $('#stLimitU').textContent = S.unit; setD($('#stLimit'), S.limitKm, 0);
+  $('#stCal').value = S.calTheme; $('#stWeek').value = S.weekStart; $('#stCell').value = S.calCell; $('#stCur').value = S.currency;
   $('#bkInfo').textContent = `${S.shoes.length} shoes, ${S.runs.length} runs. ` + (S.lastBackup ? `Last backup: ${fmtDate(S.lastBackup)}.` : 'Never backed up — do it once in a while, since clearing browser data erases everything.');
   $('#setDlg').showModal();
 }
+$('#stUnit').onchange = () => { const u = $('#stUnit').value === 'mi' ? 'mi' : 'km'; setD($('#stLimit'), getD($('#stLimit')), 0, u); $('#stLimitU').textContent = u; };
 $('#setForm').onsubmit = e => {
   e.preventDefault();
-  S.ageMonths = Math.max(1, Math.round(num($('#stAge').value)) || 12); S.currency = $('#stCur').value.trim();
+  const lim = getD($('#stLimit'));
+  S.unit = $('#stUnit').value === 'mi' ? 'mi' : 'km';
+  if (lim > 0 && Math.abs(lim - S.limitKm) > 1e-6) {
+    S.limitKm = lim;
+    const others = active().filter(s => Math.abs(s.limitKm - lim) > 1e-6);
+    if (others.length && confirm(`New shoes will be replaced at ${fmtD(lim)} ${U()}.\n\nAlso change your ${others.length} current shoe${others.length === 1 ? '' : 's'} to ${fmtD(lim)} ${U()}?`)) others.forEach(s => s.limitKm = lim);
+  }
   S.calTheme = $('#stCal').value === 'contrast' ? 'contrast' : 'soft'; S.weekStart = $('#stWeek').value === '1' ? 1 : 0;
-  save(); $('#setDlg').close(); render(); toast('Settings saved');
+  S.calCell = $('#stCell').value === 'photo' ? 'photo' : 'block'; S.currency = $('#stCur').value.trim();
+  save(); $('#setDlg').close(); render();
+  toast(S.calCell === 'photo' && !S.shoes.some(s => s.photo) ? 'Saved. Add a photo to a shoe to see it on the calendar.' : 'Settings saved');
 };
-function download(name, text, type) {
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+function download(name, data, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 $('#bkJson').onclick = () => {

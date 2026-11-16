@@ -1,5 +1,7 @@
 # Run calendar: decisions
 
+> **Updated 2026-11-17.** The two looks now style the whole app, not only the Calendar tab, and units, sharing and shoe photos were added. See "Changes on 2026-11-17" at the end; where that section disagrees with the text above it, it wins.
+
 Built 2026-11-16 from `docs/calendar-claude-code-prompt.md`. Visual references: `docs/design/calendar-soft.html` and `docs/design/calendar-contrast.html`. Interaction pattern borrowed from ballet closet's on-screen calendar (`renderCalendar`, `openDay`, `getStreak`): month grid, tap a day to open it in a dialog, "+N" on days with several records, week streak.
 
 ## What it is
@@ -78,3 +80,29 @@ Top to bottom: month header (previous / next; tapping the month name returns to 
 ## Not in this change
 
 Share images of the calendar, planned runs, pace or duration, GPS or Strava import, run notes or photos, year view, goals.
+
+## Changes on 2026-11-17
+
+### One look for the whole app
+- Soft and Contrast now style every tab and every dialog. The old light / dark styling and `prefers-color-scheme` are gone.
+- `<body>` always carries `look-soft` or `look-contrast` (these replace `cal-soft` / `cal-contrast`), plus `cal` while the Calendar tab is open. Soft tokens sit on `:root`; `body.look-contrast` overrides them. The `:root, dialog` reset is removed, so dialogs follow the look.
+- The setting is still stored as `S.calTheme` (kept for old backups). The header toggle and the "Style" setting are shown on every tab.
+- Shoe cards, the runs list and dialogs use each shoe's calendar color (thumbnail fill, dot).
+- Dialogs are full-width bottom sheets on phones.
+
+### Distance, not months
+- The months-based age warning and its setting are removed. `S.ageMonths` is left in the data and ignored. Cards still say how old a shoe is.
+- `S.unit` is `'km'` or `'mi'`. **Everything is stored in km**; miles exist only on screen (`kmTo`, `kmFrom` in the pure block; `fmtD`, `d1` for display).
+- Distance inputs use `setD` / `getD`: a field that was not edited hands back the exact stored km, so saving in miles never drifts the data.
+- `S.limitKm` (default 700) is "Replace shoes at" in Settings: the limit new shoes start with. Changing it offers to apply the new limit to the current shoes too.
+- The CSV export stays in km.
+
+### Share
+- A share icon in the header, on the Calendar tab only. `shareCanvas()` draws the month shown, in the current look, onto a 1080×1920 canvas with plain canvas calls (no library), mirroring the on-screen layout.
+- The dialog previews the picture and offers "Save image" and, where the browser supports sharing files (`navigator.canShare`), "Share". Nothing is uploaded by the app.
+
+### Calendar days: color block or shoe photo
+- `S.calCell` is `'block'` (color and distance, the default) or `'photo'`. In photo mode a run day shows the main shoe's photo instead of the distance: on the shoe's pale fill in Soft, inside a border of the shoe's color in Contrast. A shoe without a photo falls back to the color block.
+- Photos are applied through one CSS rule per shoe (`<style id="pics">`), so a photo is not repeated in every cell.
+- **Cut-outs.** `cutout()` is ported from ballet closet's `cutout.js`: it removes a plain, even background by flood-filling inwards from the border, entirely on the device, with no model and no download. It returns nothing for busy backgrounds (a floor, a room), and the original photo is kept. A picture that is already transparent is only cropped.
+- Choosing a photo tries the cut-out automatically; "Cut out" / "Original" switches between the two before saving. The saved photo is one image: `shoe.photo` (a PNG of at most 240px when cut out, else the square JPEG) with `shoe.photoCut` true or false. Both fields are additive.

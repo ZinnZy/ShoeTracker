@@ -1,5 +1,5 @@
 // Network-first so updates show up right away; falls back to cache when offline.
-const CACHE = 'shoes-v2';
+const CACHE = 'shoes-v3';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'fonts/archivo-black-400.woff2', 'fonts/space-mono-700.woff2'];
 
 self.addEventListener('install', e => {

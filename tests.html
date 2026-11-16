@@ -28,7 +28,7 @@ li.ok{color:#15803d}li.bad{color:#b91c1c;font-weight:600}
     const src = await (await fetch('index.html', { cache: 'no-store' })).text();
     const m = src.match(/\/\* pure:start[\s\S]*?\/\* pure:end \*\//);
     if (!m) throw new Error('pure block not found in index.html');
-    const P = new Function(m[0] + '\nreturn { monthGrid, dayIndex, monthSummary, weekTotals, weekStreak, freeColor, assignColors, addDays, addMonths, weekOf };')();
+    const P = new Function(m[0] + '\nreturn { monthGrid, dayIndex, monthSummary, weekTotals, weekStreak, freeColor, assignColors, addDays, addMonths, weekOf, kmTo, kmFrom, KM_PER_MI };')();
 
     // ---- check data: November 2026 (starts on a Sunday), today = 2026-11-16 ----
     const data = [[1, 16.0, 'nb'], [3, 6.2, 'pg'], [5, 8.0, 'pg'], [7, 5.0, 'sg'], [8, 18.5, 'nb'], [10, 6.0, 'pg'], [11, 10.0, 'vf'], [13, 5.2, 'pg'], [14, 12.0, 'sg'], [15, 21.1, 'vf'], [16, 4.0, 'pg']];
@@ -110,6 +110,13 @@ li.ok{color:#15803d}li.bad{color:#b91c1c;font-weight:600}
     eq(P.assignColors([0, 1, 2, 3, 4, 5].map(i => ({ colorIdx: i })).concat([{ id: 'g' }, { id: 'h' }])).slice(6).map(x => x.colorIdx), [0, 1], 'all six in use: falls back to position % 6');
     eq(P.assignColors([{ colorIdx: 9 }, { colorIdx: '2' }, { colorIdx: -1 }, { colorIdx: 1.5 }]).map(x => x.colorIdx), [0, 1, 2, 3], 'invalid colorIdx values are replaced');
     eq(P.freeColor([{ colorIdx: 0 }, { colorIdx: 1 }], 2), 2, 'a new shoe gets the next free color');
+
+    // ---- units: stored in km, miles only on screen ----
+    eq([P.kmTo(10, 'km'), P.kmFrom(10, 'km')], [10, 10], 'km is passed through unchanged');
+    near(P.kmTo(1.609344, 'mi'), 1, '1.609344 km is 1 mile');
+    eq(Math.round(P.kmTo(42.195, 'mi') * 100) / 100, 26.22, 'a marathon is 26.22 miles');
+    near(P.kmFrom(P.kmTo(700, 'mi'), 'mi'), 700, 'km to miles and back is the same distance');
+    eq(Math.round(P.kmTo(700, 'mi')), 435, '700 km shows as 435 mi');
 
     // ---- date helpers ----
     eq([P.addDays('2026-03-01', -1), P.addDays('2028-02-28', 1), P.addDays('2026-12-31', 1)], ['2026-02-28', '2028-02-29', '2027-01-01'], 'addDays across month, leap day and year');
