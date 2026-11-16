@@ -106,3 +106,12 @@ Share images of the calendar, planned runs, pace or duration, GPS or Strava impo
 - Photos are applied through one CSS rule per shoe (`<style id="pics">`), so a photo is not repeated in every cell.
 - **Cut-outs.** `cutout()` is ported from ballet closet's `cutout.js`: it removes a plain, even background by flood-filling inwards from the border, entirely on the device, with no model and no download. It returns nothing for busy backgrounds (a floor, a room), and the original photo is kept. A picture that is already transparent is only cropped.
 - Choosing a photo tries the cut-out automatically; "Cut out" / "Original" switches between the two before saving. The saved photo is one image: `shoe.photo` (a PNG of at most 240px when cut out, else the square JPEG) with `shoe.photoCut` true or false. Both fields are additive.
+
+### Cut-out from any background (added later on 2026-11-17)
+The plain-background `cutout()` left real photos (floor, room, shoe rack) uncut, so a second, model-based path was added. This is the app's one dependency, and a deliberate exception to "no dependencies".
+
+- **What:** MediaPipe's Interactive Segmenter ("magic touch" model), vendored in `vendor/mediapipe/` (library 0.10.14 from npm, model from Google's model storage; both Apache 2.0, see the README there). About 16 MB is used on a phone (the folder is 25 MB because it also holds the no-SIMD build for older devices).
+- **Where it runs:** on the device. The photo is never uploaded. The files are fetched from this site, not a CDN, and only the first time a photo is cut out, never at app start. The service worker keeps them in their own cache (`shoes-vendor-1`, cache-first), which app updates do not clear, so the download happens once and it works offline afterwards. They are not in `SHELL`.
+- **Flow:** choosing a photo first tries the instant plain-background cut-out. If that fails, the "Cut out the shoe" dialog opens: tap the shoe, check the preview, tap again to add a missed part, then "Use it". "Cut out" in the shoe dialog reopens it; "Original" switches back.
+- **Existing photos:** a shoe that only has the stored 240px square photo can still be cut out from that. Choosing the photo again gives a sharper result, because the full picture (up to 1024px) is then available.
+- `segmentAt()` picks the confidence mask that is strongest at the tapped point, softens the edge, and `cutout()` crops the result. The saved photo is still one PNG of at most 240px (`shoe.photo`, `shoe.photoCut`).

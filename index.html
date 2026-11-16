@@ -111,6 +111,8 @@ input,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:var
 .sw{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:var(--rs);background:var(--c);display:grid;place-items:center;cursor:pointer}
 .sw i{width:14px;height:14px;border-radius:99px;background:var(--d)}
 .sw[aria-checked=true]{outline:2px solid var(--text);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:default}
+#cutCv{display:block;max-width:100%;max-height:50vh;margin:10px auto 0;border:1px solid var(--line);cursor:crosshair;touch-action:manipulation}
 #shareImg{display:block;max-width:100%;max-height:52vh;margin:0 auto;border:1px solid var(--line)}
 .toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:var(--r);font-size:14px;z-index:20;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
@@ -360,6 +362,21 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <button type="button" class="btn" data-close>Close</button>
       <button type="button" class="btn" id="shareSave">Save image</button>
       <button type="button" class="btn pri" id="shareGo">Share</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Cut-out dialog (shoe photo) -->
+<dialog id="cutDlg">
+  <form method="dialog">
+    <h2>Cut out the shoe</h2>
+    <div class="hint" id="cutNote"></div>
+    <canvas id="cutCv" role="img" aria-label="Your photo. Tap the shoe to cut it out."></canvas>
+    <div class="actions">
+      <button type="button" class="btn" id="cutReset">Start over</button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="button" class="btn pri" id="cutUse">Use it</button>
     </div>
   </form>
 </dialog>
@@ -918,16 +935,97 @@ function cutThumb(img) {
   const s = Math.min(1, 600 / Math.max(img.width, img.height)), work = document.createElement('canvas');
   work.width = Math.max(1, Math.round(img.width * s)); work.height = Math.max(1, Math.round(img.height * s));
   work.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, work.width, work.height);
-  const cut = cutout(work); if (!cut) return null;
-  const t = Math.min(1, 240 / Math.max(cut.width, cut.height)), out = document.createElement('canvas');
-  out.width = Math.max(1, Math.round(cut.width * t)); out.height = Math.max(1, Math.round(cut.height * t));
-  out.getContext('2d').drawImage(cut, 0, 0, out.width, out.height);
+  const cut = cutout(work); return cut && thumbPng(cut);
+}
+function thumbPng(c) {
+  const t = Math.min(1, 240 / Math.max(c.width, c.height)), out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(c.width * t)); out.height = Math.max(1, Math.round(c.height * t));
+  out.getContext('2d').drawImage(c, 0, 0, out.width, out.height);
   return out.toDataURL('image/png');
 }
+// A copy of a picture on a canvas, at most `max` px on its long side.
+function toCanvas(img, max) {
+  const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+  c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+// ---------- shoe photo: cut-out from any background (tap the shoe) ----------
+// For photos the plain-background cutout() can't handle. Uses MediaPipe's Interactive Segmenter, on the device.
+// The library and model (vendor/mediapipe, about 16 MB) are fetched from this site the first time only; the photo is never uploaded.
+let segmenterP = null, segmenterReady = false;
+function segmenter() {
+  return segmenterP || (segmenterP = (async () => {
+    const v = await import('./vendor/mediapipe/vision_bundle.mjs');
+    const files = await v.FilesetResolver.forVisionTasks('vendor/mediapipe/wasm');
+    const seg = await v.InteractiveSegmenter.createFromOptions(files, { baseOptions: { modelAssetPath: 'vendor/mediapipe/magic_touch.tflite' }, outputCategoryMask: false, outputConfidenceMasks: true });
+    segmenterReady = true; return seg;
+  })().catch(e => { segmenterP = null; throw e; }));
+}
+// The picture with everything but the tapped object made transparent. pts: taps as fractions of width and height.
+async function segmentAt(src, pts) {
+  const seg = await segmenter();
+  const mask = await new Promise((res, rej) => {
+    try {
+      seg.segment(src, pts.length > 1 ? { scribble: pts } : { keypoint: pts[0] }, r => {
+        // one confidence mask per layer; the object is the layer that is strongest where the user tapped
+        let best = null;
+        for (const m of r.confidenceMasks || []) {
+          const d = m.getAsFloat32Array(), w = m.width, h = m.height;
+          const at = d[Math.min(h - 1, Math.floor(pts[0].y * h)) * w + Math.min(w - 1, Math.floor(pts[0].x * w))];
+          if (!best || at > best.at) best = { at, w, h, d: d.slice() };
+        }
+        best ? res(best) : rej(new Error('no mask'));
+      });
+    } catch (e) { rej(e); }
+  });
+  const mc = document.createElement('canvas'); mc.width = mask.w; mc.height = mask.h;
+  const mx = mc.getContext('2d'), id = mx.createImageData(mask.w, mask.h);
+  for (let i = 0; i < mask.d.length; i++) id.data[i * 4 + 3] = Math.max(0, Math.min(1, (mask.d[i] - .3) / .4)) * 255;   // soft edge
+  mx.putImageData(id, 0, 0);
+  const out = document.createElement('canvas'); out.width = src.width; out.height = src.height;
+  const o = out.getContext('2d', { willReadFrequently: true });
+  o.drawImage(src, 0, 0); o.globalCompositeOperation = 'destination-in'; o.imageSmoothingQuality = 'high'; o.drawImage(mc, 0, 0, out.width, out.height);
+  return out;
+}
+let cutSrc = null, cutPts = [], cutOut = null, cutBusy = false;
+function drawCut() {
+  const cv = $('#cutCv'), c = cv.getContext('2d'), r = Math.max(5, cutSrc.width / 60);
+  cv.width = cutSrc.width; cv.height = cutSrc.height;
+  if (cutOut) { c.fillStyle = S.calTheme === 'soft' ? '#F6F3F1' : '#1C1C1C'; c.fillRect(0, 0, cv.width, cv.height); c.globalAlpha = .22; c.drawImage(cutSrc, 0, 0); c.globalAlpha = 1; c.drawImage(cutOut, 0, 0); }
+  else c.drawImage(cutSrc, 0, 0);
+  for (const p of cutPts) { c.beginPath(); c.arc(p.x * cv.width, p.y * cv.height, r, 0, 7); c.fillStyle = '#D4F23C'; c.fill(); c.lineWidth = r / 3; c.strokeStyle = '#0A0A0A'; c.stroke(); }
+  $('#cutUse').disabled = !cutOut || cutBusy; $('#cutReset').disabled = !cutPts.length || cutBusy;
+}
+async function openCut() {
+  try { cutSrc = ph.src || toCanvas(await loadImg(ph.orig), 1024); } catch (e) { return toast('Could not read that image'); }
+  cutPts = []; cutOut = null; cutBusy = false; drawCut();
+  $('#cutNote').textContent = 'Tap the shoe.';
+  $('#cutDlg').showModal();
+}
+$('#cutCv').onclick = async e => {
+  if (cutBusy) return;
+  const b = e.currentTarget.getBoundingClientRect();
+  cutPts.push({ x: Math.min(.999, Math.max(0, (e.clientX - b.left) / b.width)), y: Math.min(.999, Math.max(0, (e.clientY - b.top) / b.height)) });
+  cutBusy = true; drawCut();
+  $('#cutNote').textContent = segmenterReady ? 'Cutting out…' : 'Getting the cut-out tool ready (16 MB, first time only)…';
+  try { cutOut = await segmentAt(cutSrc, cutPts); $('#cutNote').textContent = 'Looks right? Tap “Use it”. If a part is missing, tap that part too.'; }
+  catch (err) { cutPts.pop(); $('#cutNote').textContent = navigator.onLine === false ? 'The cut-out tool needs to download once. Connect to the internet and tap the shoe again.' : 'The cut-out tool could not start on this device. You can keep the original photo.'; }
+  cutBusy = false; drawCut();
+};
+$('#cutReset').onclick = () => { cutPts = []; cutOut = null; drawCut(); $('#cutNote').textContent = 'Tap the shoe.'; };
+$('#cutUse').onclick = () => {
+  const c = cutOut && cutout(toCanvas(cutOut, 1024));
+  if (!c) { $('#cutNote').textContent = "That didn't pick out the shoe. Tap “Start over” and tap the middle of the shoe."; return; }
+  ph.cut = thumbPng(c); ph.useCut = true; ph.tried = true;
+  $('#cutDlg').close(); setPhotoPrev();
+};
 
 // ---------- shoe dialog ----------
-// ph: the photo being edited. orig = square JPEG, cut = transparent PNG, useCut = which one is saved, tried = cut-out was attempted.
-const noPhoto = () => ({ orig: null, cut: null, useCut: false, tried: false });
+// ph: the photo being edited. orig = square JPEG, cut = transparent PNG, useCut = which one is saved,
+// tried = the quick plain-background cut-out was attempted, src = the full picture (canvas) while it is still at hand.
+const noPhoto = () => ({ orig: null, cut: null, useCut: false, tried: false, src: null });
 let editShoe = null, ph = noPhoto(), pendingColor = 0;
 $('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
 function setPhotoPrev() {
@@ -935,11 +1033,10 @@ function setPhotoPrev() {
   box.className = 'thumb' + (src && ph.useCut ? ' cut' : '');
   box.innerHTML = src ? `<img src="${esc(src)}" alt="">` : '👟';
   $('#sPhotoDel').hidden = !src;
-  b.hidden = !src || (ph.useCut && !ph.orig) || (ph.tried && !ph.cut);
+  b.hidden = !src || (ph.useCut && !ph.orig);
   b.textContent = ph.useCut ? 'Original' : 'Cut out';
-  $('#sPhotoNote').textContent = !src ? 'A cut-out photo can be shown on the calendar. Cutting out works on a plain, even background.'
-    : ph.tried && !ph.cut ? "Couldn't cut this one out: it needs a plain, even background. The original photo is kept."
-    : ph.useCut ? 'Background removed.' : '';
+  $('#sPhotoNote').textContent = !src ? 'Choose a photo, then tap the shoe to cut it out of the background. A cut-out can be shown on the calendar.'
+    : ph.useCut ? (ph.orig ? 'Background removed.' : 'Background removed. To redo it, choose the photo again.') : 'Tap “Cut out” to remove the background.';
 }
 function setColors() {
   $('#sColors').innerHTML = CAL_PAL[S.calTheme].map(([c], i) => `<button type="button" class="sw" role="radio" aria-checked="${i === pendingColor}" aria-label="${CAL_NAMES[S.calTheme][i]}" data-color="${i}" style="--c:${c};--d:${calDot(i)}"><i></i></button>`).join('');
@@ -953,7 +1050,7 @@ function openShoe(id) {
   setD($('#sStartKm'), sh.startKm || 0, 1); setD($('#sLimit'), sh.limitKm, 0); $('#sPrice').value = sh.price || '';
   $('#curLbl').textContent = S.currency ? `(${S.currency})` : '';
   $('#sDefault').checked = editShoe ? S.defaultShoeId === sh.id : active().length === 0;
-  ph = !sh.photo ? noPhoto() : sh.photoCut ? { orig: null, cut: sh.photo, useCut: true, tried: true } : { orig: sh.photo, cut: null, useCut: false, tried: false };
+  ph = !sh.photo ? noPhoto() : sh.photoCut ? { ...noPhoto(), cut: sh.photo, useCut: true, tried: true } : { ...noPhoto(), orig: sh.photo };
   setPhotoPrev();
   pendingColor = editShoe ? sh.colorIdx : freeColor(S.shoes, S.shoes.length); setColors();
   $('#sDelete').hidden = !editShoe; $('#sRetire').hidden = !editShoe;
@@ -968,16 +1065,21 @@ $('#sPhoto').onchange = async e => {
   const url = URL.createObjectURL(f);
   try {
     const img = await loadImg(url);
-    ph = { orig: squareThumb(img, 240), cut: null, useCut: false, tried: true };
-    try { ph.cut = cutThumb(img); } catch (err) {}
+    ph = { orig: squareThumb(img, 240), cut: null, useCut: false, tried: true, src: toCanvas(img, 1024) };
+    try { ph.cut = cutThumb(img); } catch (err) {}   // plain background: instant
     ph.useCut = !!ph.cut; setPhotoPrev();
+    if (!ph.cut) openCut();                           // anything else: tap the shoe
   } catch (err) { toast('Could not read that image'); }
   URL.revokeObjectURL(url);
 };
 $('#sPhotoCut').onclick = async () => {
-  if (ph.cut) ph.useCut = !ph.useCut;
-  else { try { ph.cut = cutThumb(await loadImg(ph.orig)); } catch (err) {} ph.tried = true; ph.useCut = !!ph.cut; }
-  setPhotoPrev();
+  if (ph.useCut) { ph.useCut = false; return setPhotoPrev(); }
+  if (!ph.tried) {
+    ph.tried = true;
+    try { ph.cut = cutThumb(ph.src || await loadImg(ph.orig)); } catch (err) {}
+    if (ph.cut) { ph.useCut = true; return setPhotoPrev(); }
+  }
+  openCut();
 };
 $('#shoeForm').onsubmit = e => {
   e.preventDefault();
