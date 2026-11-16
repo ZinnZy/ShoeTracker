@@ -115,3 +115,9 @@ The plain-background `cutout()` left real photos (floor, room, shoe rack) uncut,
 - **Flow:** choosing a photo first tries the instant plain-background cut-out. If that fails, the "Cut out the shoe" dialog opens: tap the shoe, check the preview, tap again to add a missed part, then "Use it". "Cut out" in the shoe dialog reopens it; "Original" switches back.
 - **Existing photos:** a shoe that only has the stored 240px square photo can still be cut out from that. Choosing the photo again gives a sharper result, because the full picture (up to 1024px) is then available.
 - `segmentAt()` picks the confidence mask that is strongest at the tapped point, softens the edge, and `cutout()` crops the result. The saved photo is still one PNG of at most 240px (`shoe.photo`, `shoe.photoCut`).
+
+### Language (added later on 2026-11-17)
+- Settings has "Language": English (default), 한국어, 中文 (简体). Stored as `S.lang` (`'en'`, `'ko'`, `'zh'`), additive.
+- `I18N` in `index.html` maps each English string to `[Korean, Chinese]`; `tr(key, ...args)` looks it up and fills `{0}`, `{1}`…. English is the key, so a missing entry falls back to English.
+- Static page text carries `data-t`, `data-t-aria`, `data-t-ph` or `data-t-alt`; `applyI18n()` fills them on every render.
+- Dates and weekday names follow the chosen language (`LOCALE()`), not the device. Shoe types are stored in English and translated only on screen. The CSV export and the app name stay in English.

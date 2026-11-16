@@ -260,23 +260,23 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <div class="wrap">
   <header>
     <div class="hrow"><h1>Shoe Tracker</h1><div class="hbtns">
-      <button type="button" class="icon-btn" id="shareBtn" aria-label="Share this month"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg></button>
+      <button type="button" class="icon-btn" id="shareBtn" data-t-aria="Share this month"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg></button>
       <button type="button" id="styleBtn"><i></i><i></i></button>
-      <button type="button" class="icon-btn" id="menuBtn" aria-label="Settings"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button>
+      <button type="button" class="icon-btn" id="menuBtn" data-t-aria="Settings"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button>
     </div></div>
     <nav class="tabs">
-      <button data-tab="shoes" class="on">Shoes</button>
-      <button data-tab="calendar">Calendar</button>
-      <button data-tab="runs">Runs</button>
-      <button data-tab="retired">Retired</button>
+      <button data-tab="shoes" class="on" data-t="Shoes">Shoes</button>
+      <button data-tab="calendar" data-t="Calendar">Calendar</button>
+      <button data-tab="runs" data-t="Runs">Runs</button>
+      <button data-tab="retired" data-t="Retired">Retired</button>
     </nav>
   </header>
   <main id="view"></main>
 </div>
 
 <div class="fab">
-  <button class="btn" id="addShoeBtn">+ Shoe</button>
-  <button class="btn pri" id="addRunBtn">+ Run</button>
+  <button class="btn" id="addShoeBtn" data-t="+ Shoe">+ Shoe</button>
+  <button class="btn pri" id="addRunBtn" data-t="+ Run">+ Run</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -285,36 +285,36 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <dialog id="shoeDlg">
   <form id="shoeForm" method="dialog">
     <h2 id="shoeTitle">Add shoe</h2>
-    <label for="sName">Name / model</label>
-    <input id="sName" required maxlength="60" placeholder="e.g. Pegasus 41 (blue)">
+    <label for="sName" data-t="Name / model"></label>
+    <input id="sName" required maxlength="60" data-t-ph="e.g. Pegasus 41 (blue)">
     <div class="two">
-      <div><label for="sType">Type</label><select id="sType"></select></div>
-      <div><label for="sStart">First used</label><input id="sStart" type="date" required></div>
+      <div><label for="sType" data-t="Type"></label><select id="sType"></select></div>
+      <div><label for="sStart" data-t="First used"></label><input id="sStart" type="date" required></div>
     </div>
     <div class="two">
-      <div><label for="sStartKm">Already run (<span class="u">km</span>)</label><input id="sStartKm" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
-      <div><label for="sLimit">Replace at (<span class="u">km</span>)</label><input id="sLimit" type="number" inputmode="decimal" min="1" step="any" required></div>
+      <div><label for="sStartKm" data-t="Already run ({0})"></label><input id="sStartKm" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
+      <div><label for="sLimit" data-t="Replace at ({0})"></label><input id="sLimit" type="number" inputmode="decimal" min="1" step="any" required></div>
     </div>
-    <label for="sPrice">Price <span id="curLbl"></span> (optional, for cost per <span class="u">km</span>)</label>
+    <label for="sPrice" data-t="Price {1} (optional, for cost per {0})"></label>
     <input id="sPrice" type="number" inputmode="decimal" min="0" step="any">
-    <label>Photo (optional)</label>
+    <label data-t="Photo (optional)"></label>
     <div class="photo">
       <div class="thumb" id="sPhotoPrev"></div>
       <input id="sPhoto" type="file" accept="image/*" hidden>
-      <button type="button" class="btn" id="sPhotoPick">Choose</button>
+      <button type="button" class="btn" id="sPhotoPick" data-t="Choose"></button>
       <button type="button" class="btn" id="sPhotoCut">Cut out</button>
-      <button type="button" class="btn" id="sPhotoDel">Remove</button>
+      <button type="button" class="btn" id="sPhotoDel" data-t="Remove"></button>
     </div>
     <div class="hint" id="sPhotoNote"></div>
-    <label id="sColorLbl">Calendar color</label>
+    <label id="sColorLbl" data-t="Calendar color"></label>
     <div class="swatches" id="sColors" role="radiogroup" aria-labelledby="sColorLbl"></div>
-    <label class="check"><input type="checkbox" id="sDefault"> Default shoe for new runs</label>
+    <label class="check"><input type="checkbox" id="sDefault"> <span data-t="Default shoe for new runs"></span></label>
     <div class="actions">
-      <button type="button" class="btn danger" id="sDelete">Delete</button>
+      <button type="button" class="btn danger" id="sDelete" data-t="Delete"></button>
       <button type="button" class="btn" id="sRetire">Retire</button>
       <span class="grow"></span>
-      <button type="button" class="btn" data-close>Cancel</button>
-      <button class="btn pri" value="save">Save</button>
+      <button type="button" class="btn" data-close data-t="Cancel"></button>
+      <button class="btn pri" value="save" data-t="Save"></button>
     </div>
   </form>
 </dialog>
@@ -323,18 +323,18 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <dialog id="runDlg">
   <form id="runForm" method="dialog">
     <h2 id="runTitle">Log run</h2>
-    <label for="rShoe">Shoe</label>
+    <label for="rShoe" data-t="Shoe"></label>
     <select id="rShoe" required></select>
     <div class="two">
-      <div><label for="rKm">Distance (<span class="u">km</span>)</label><input id="rKm" type="number" inputmode="decimal" min="0.01" step="any" required></div>
-      <div><label for="rDate">Date</label><input id="rDate" type="date" required></div>
+      <div><label for="rKm" data-t="Distance ({0})"></label><input id="rKm" type="number" inputmode="decimal" min="0.01" step="any" required></div>
+      <div><label for="rDate" data-t="Date"></label><input id="rDate" type="date" required></div>
     </div>
     <div class="chips" id="rChips"></div>
     <div class="actions">
-      <button type="button" class="btn danger" id="rDelete">Delete</button>
+      <button type="button" class="btn danger" id="rDelete" data-t="Delete"></button>
       <span class="grow"></span>
-      <button type="button" class="btn" data-close>Cancel</button>
-      <button class="btn pri" value="save">Save</button>
+      <button type="button" class="btn" data-close data-t="Cancel"></button>
+      <button class="btn pri" value="save" data-t="Save"></button>
     </div>
   </form>
 </dialog>
@@ -346,8 +346,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div id="dayBody"></div>
     <div class="actions">
       <span class="grow"></span>
-      <button type="button" class="btn" data-close>Close</button>
-      <button type="button" class="btn pri" id="dayAdd">+ Log run on this date</button>
+      <button type="button" class="btn" data-close data-t="Close"></button>
+      <button type="button" class="btn pri" id="dayAdd" data-t="+ Log run on this date"></button>
     </div>
   </form>
 </dialog>
@@ -355,13 +355,13 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <!-- Share dialog (calendar) -->
 <dialog id="shareDlg">
   <form method="dialog">
-    <h2>Share this month</h2>
-    <img id="shareImg" alt="Picture of this month's run calendar">
+    <h2 data-t="Share this month"></h2>
+    <img id="shareImg" data-t-alt="Picture of this month's run calendar">
     <div class="actions">
       <span class="grow"></span>
-      <button type="button" class="btn" data-close>Close</button>
-      <button type="button" class="btn" id="shareSave">Save image</button>
-      <button type="button" class="btn pri" id="shareGo">Share</button>
+      <button type="button" class="btn" data-close data-t="Close"></button>
+      <button type="button" class="btn" id="shareSave" data-t="Save image"></button>
+      <button type="button" class="btn pri" id="shareGo" data-t="Share"></button>
     </div>
   </form>
 </dialog>
@@ -369,14 +369,14 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <!-- Cut-out dialog (shoe photo) -->
 <dialog id="cutDlg">
   <form method="dialog">
-    <h2>Cut out the shoe</h2>
+    <h2 data-t="Cut out the shoe"></h2>
     <div class="hint" id="cutNote"></div>
-    <canvas id="cutCv" role="img" aria-label="Your photo. Tap the shoe to cut it out."></canvas>
+    <canvas id="cutCv" role="img" data-t-aria="Your photo. Tap the shoe to cut it out."></canvas>
     <div class="actions">
-      <button type="button" class="btn" id="cutReset">Start over</button>
+      <button type="button" class="btn" id="cutReset" data-t="Start over"></button>
       <span class="grow"></span>
-      <button type="button" class="btn" data-close>Cancel</button>
-      <button type="button" class="btn pri" id="cutUse">Use it</button>
+      <button type="button" class="btn" data-close data-t="Cancel"></button>
+      <button type="button" class="btn pri" id="cutUse" data-t="Use it"></button>
     </div>
   </form>
 </dialog>
@@ -384,30 +384,32 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <!-- Settings dialog -->
 <dialog id="setDlg">
   <form id="setForm" method="dialog">
-    <h2>Settings</h2>
+    <h2 data-t="Settings"></h2>
+    <label for="stLang" data-t="Language"></label>
+    <select id="stLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文 (简体)</option></select>
     <div class="two">
-      <div><label for="stUnit">Distance unit</label><select id="stUnit"><option value="km">Kilometres (km)</option><option value="mi">Miles (mi)</option></select></div>
-      <div><label for="stLimit">Replace shoes at (<span id="stLimitU">km</span>)</label><input id="stLimit" type="number" inputmode="decimal" min="1" step="any"></div>
+      <div><label for="stUnit" data-t="Distance unit"></label><select id="stUnit"><option value="km" data-t="Kilometres (km)"></option><option value="mi" data-t="Miles (mi)"></option></select></div>
+      <div><label for="stLimit" id="stLimitLbl"></label><input id="stLimit" type="number" inputmode="decimal" min="1" step="any"></div>
     </div>
     <div class="two">
-      <div><label for="stCal">Style</label><select id="stCal"><option value="soft">Soft</option><option value="contrast">Contrast</option></select></div>
-      <div><label for="stWeek">Week starts on</label><select id="stWeek"><option value="0">Sunday</option><option value="1">Monday</option></select></div>
+      <div><label for="stCal" data-t="Style"></label><select id="stCal"><option value="soft" data-t="Soft"></option><option value="contrast" data-t="Contrast"></option></select></div>
+      <div><label for="stWeek" data-t="Week starts on"></label><select id="stWeek"><option value="0" data-t="Sunday"></option><option value="1" data-t="Monday"></option></select></div>
     </div>
     <div class="two">
-      <div><label for="stCell">Calendar days show</label><select id="stCell"><option value="block">Color block</option><option value="photo">Shoe photo</option></select></div>
-      <div><label for="stCur">Currency symbol</label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
+      <div><label for="stCell" data-t="Calendar days show"></label><select id="stCell"><option value="block" data-t="Color block"></option><option value="photo" data-t="Shoe photo"></option></select></div>
+      <div><label for="stCur" data-t="Currency symbol"></label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
     </div>
-    <div class="actions"><span class="grow"></span><button class="btn pri" value="save">Save settings</button></div>
+    <div class="actions"><span class="grow"></span><button class="btn pri" value="save" data-t="Save settings"></button></div>
     <hr>
-    <label>Data (stored only on this device)</label>
+    <label data-t="Data (stored only on this device)"></label>
     <div class="actions" style="margin-top:6px">
-      <button type="button" class="btn" id="bkJson">Backup (JSON)</button>
-      <button type="button" class="btn" id="bkRestore">Restore</button>
-      <button type="button" class="btn" id="bkCsv">Export runs (CSV)</button>
+      <button type="button" class="btn" id="bkJson" data-t="Backup (JSON)"></button>
+      <button type="button" class="btn" id="bkRestore" data-t="Restore"></button>
+      <button type="button" class="btn" id="bkCsv" data-t="Export runs (CSV)"></button>
       <input type="file" id="bkFile" accept="application/json,.json" hidden>
     </div>
     <div class="hint" id="bkInfo"></div>
-    <div class="actions"><span class="grow"></span><button type="button" class="btn" data-close>Close</button></div>
+    <div class="actions"><span class="grow"></span><button type="button" class="btn" data-close data-t="Close"></button></div>
   </form>
 </dialog>
 
@@ -419,7 +421,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
-const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtDate = s => loc(pd(s), { month: 'short', day: 'numeric', year: 'numeric' });
 
 /* pure:start — calendar maths and units. Data in, data out: no DOM, no reads of S. tests.html loads this block. */
 const pad2 = n => String(n).padStart(2, '0');
@@ -484,7 +486,7 @@ const kmFrom = (v, unit) => unit === 'mi' ? v * KM_PER_MI : v;
 
 // ---------- state ----------
 function load() {
-  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0, unit: 'km', limitKm: 700, calCell: 'block' };
+  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0, unit: 'km', limitKm: 700, calCell: 'block', lang: 'en' };
   let d = base;
   try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.shoes)) d = { ...base, ...p }; } catch (e) {}
   // additive migration: fresh state, old state and restored backups all pass through here
@@ -493,16 +495,116 @@ function load() {
   d.unit = d.unit === 'mi' ? 'mi' : 'km';
   d.limitKm = d.limitKm > 0 ? +d.limitKm : 700;
   d.calCell = d.calCell === 'photo' ? 'photo' : 'block';
+  d.lang = d.lang === 'ko' || d.lang === 'zh' ? d.lang : 'en';
   assignColors(d.shoes);
   return d;
 }
 let S = load();
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); }
-  catch (e) { alert('Could not save — storage is full. Remove some shoe photos or export a backup.'); }
+  catch (e) { alert(tr('Could not save — storage is full. Remove some shoe photos or export a backup.')); }
 }
 let tab = 'shoes';
 let calMonth = today().slice(0, 7), calSel = null, calAnim = false;
+
+// ---------- language ----------
+// Keys are the English text. Each entry: [Korean, Simplified Chinese]. {0}, {1}… are filled in by tr().
+const I18N = {
+  'Share this month': ['이번 달 공유', '分享本月'], 'Settings': ['설정', '设置'],
+  'Shoes': ['신발', '跑鞋'], 'Calendar': ['달력', '日历'], 'Runs': ['기록', '记录'], 'Retired': ['은퇴', '已退役'],
+  '+ Shoe': ['+ 신발', '+ 跑鞋'], '+ Run': ['+ 러닝', '+ 跑步'],
+  'Add shoe': ['신발 추가', '添加跑鞋'], 'Edit shoe': ['신발 수정', '编辑跑鞋'],
+  'Name / model': ['이름 / 모델', '名称 / 型号'], 'e.g. Pegasus 41 (blue)': ['예: 페가수스 41 (블루)', '例如:Pegasus 41(蓝色)'],
+  'Type': ['종류', '类型'], 'First used': ['첫 착용일', '首次使用'],
+  'Already run ({0})': ['이미 달린 거리 ({0})', '已跑距离 ({0})'], 'Replace at ({0})': ['교체 기준 ({0})', '更换里程 ({0})'],
+  'Price {1} (optional, for cost per {0})': ['가격 {1} (선택, {0}당 비용 계산용)', '价格 {1}(可选,用于计算每 {0} 的成本)'],
+  'Photo (optional)': ['사진 (선택)', '照片(可选)'],
+  'Choose': ['선택', '选择'], 'Cut out': ['누끼 따기', '抠图'], 'Original': ['원본', '原图'], 'Remove': ['삭제', '移除'],
+  'Calendar color': ['달력 색상', '日历颜色'], 'Default shoe for new runs': ['새 러닝의 기본 신발로 사용', '设为新跑步的默认跑鞋'],
+  'Delete': ['삭제', '删除'], 'Retire': ['은퇴', '退役'], 'Un-retire': ['은퇴 취소', '取消退役'], 'Cancel': ['취소', '取消'], 'Save': ['저장', '保存'], 'Close': ['닫기', '关闭'],
+  'Log run': ['러닝 기록', '记录跑步'], 'Edit run': ['러닝 수정', '编辑跑步'],
+  'Shoe': ['신발', '跑鞋'], 'Distance ({0})': ['거리 ({0})', '距离 ({0})'], 'Date': ['날짜', '日期'],
+  '+ Log run on this date': ['+ 이 날짜에 러닝 기록', '+ 记录这一天的跑步'],
+  "Picture of this month's run calendar": ['이번 달 러닝 달력 이미지', '本月跑步日历图片'],
+  'Save image': ['이미지 저장', '保存图片'], 'Share': ['공유', '分享'],
+  'Cut out the shoe': ['신발 누끼 따기', '抠出跑鞋'], 'Your photo. Tap the shoe to cut it out.': ['내 사진. 신발을 누르면 누끼를 따요.', '你的照片。点按跑鞋即可抠图。'],
+  'Start over': ['다시 하기', '重新开始'], 'Use it': ['사용하기', '使用'],
+  'Language': ['언어', '语言'], 'Distance unit': ['거리 단위', '距离单位'], 'Kilometres (km)': ['킬로미터 (km)', '公里 (km)'], 'Miles (mi)': ['마일 (mi)', '英里 (mi)'],
+  'Replace shoes at ({0})': ['신발 교체 기준 ({0})', '跑鞋更换里程 ({0})'],
+  'Style': ['스타일', '风格'], 'Soft': ['소프트', '柔和'], 'Contrast': ['콘트라스트', '高对比'],
+  'Week starts on': ['한 주의 시작', '每周开始于'], 'Sunday': ['일요일', '星期日'], 'Monday': ['월요일', '星期一'],
+  'Calendar days show': ['달력 날짜 표시', '日历日期显示'], 'Color block': ['색상 블록', '色块'], 'Shoe photo': ['신발 사진', '跑鞋照片'],
+  'Currency symbol': ['통화 기호', '货币符号'], 'Save settings': ['설정 저장', '保存设置'],
+  'Data (stored only on this device)': ['데이터 (이 기기에만 저장돼요)', '数据(仅保存在此设备上)'],
+  'Backup (JSON)': ['백업 (JSON)', '备份 (JSON)'], 'Restore': ['복원', '恢复'], 'Export runs (CSV)': ['기록 내보내기 (CSV)', '导出记录 (CSV)'],
+  'Daily': ['데일리', '日常'], 'Tempo': ['템포', '节奏跑'], 'Race': ['레이스', '比赛'], 'Long run': ['롱런', '长距离'], 'Trail': ['트레일', '越野'], 'Recovery': ['리커버리', '恢复跑'], 'Walk / other': ['걷기 / 기타', '步行 / 其他'],
+  'Past its limit — time to replace': ['한계를 넘었어요 — 교체할 때예요', '已超过上限 — 该更换了'],
+  '{0} {1} left — shop for a replacement': ['{0} {1} 남았어요 — 새 신발을 알아보세요', '还剩 {0} {1} — 该选购新鞋了'],
+  '{0} old': ['{0} 됨', '已用 {0}'], '{0} d': ['{0}일', '{0} 天'], '{0} mo': ['{0}개월', '{0} 个月'], '{0} yr': ['{0}년', '{0} 年'],
+  '{0} run': ['{0}회', '{0} 次'], '{0} runs': ['{0}회', '{0} 次'], 'run': ['러닝', '跑步'], 'runs': ['러닝', '跑步'], ', {0} runs': [', {0}회', ',{0} 次'],
+  'Default shoe': ['기본 신발', '默认跑鞋'], 'No shoes yet.': ['아직 신발이 없어요.', '还没有跑鞋。'], 'Add your first pair': ['첫 신발 추가하기', '添加第一双'],
+  '{0} is past {1} {2}. Retire it.': ['{0}: {1} {2}를 넘었어요. 은퇴시켜 주세요.', '{0} 已超过 {1} {2},该退役了。'],
+  '{0} is at {1}%. Replace soon.': ['{0}: {1}% 사용했어요. 곧 교체하세요.', '{0} 已用 {1}%,请尽快更换。'],
+  'No retired shoes yet.': ['아직 은퇴한 신발이 없어요.', '还没有退役的跑鞋。'],
+  "Tap a shoe and choose “Retire” when it's done.": ['다 신은 신발을 눌러 “은퇴”를 선택하세요.', '跑鞋用完后,点按它并选择“退役”。'],
+  'pairs retired': ['은퇴한 신발', '已退役跑鞋'], 'avg {0} per pair': ['켤레당 평균 {0}', '每双平均 {0}'],
+  'No runs logged yet.': ['아직 러닝 기록이 없어요.', '还没有跑步记录。'], 'Tap “+ Run” after each run.': ['달린 뒤 “+ 러닝”을 눌러 기록하세요.', '每次跑完后点按“+ 跑步”。'],
+  '{0} this month': ['이번 달 {0}', '本月 {0}'], '{0} this year': ['올해 {0}', '今年 {0}'],
+  '{0}. Go to current month': ['{0}. 이번 달로 이동', '{0}。回到本月'], 'Previous month': ['이전 달', '上个月'], 'Next month': ['다음 달', '下个月'],
+  '{0}-week streak': ['{0}주 연속', '连续 {0} 周'], 'STREAK WK': ['연속 주', '连续周'], 'Weekly {0}': ['주간 {0}', '每周 {0}'],
+  '(deleted shoe)': ['(삭제된 신발)', '(已删除的跑鞋)'], 'total': ['합계', '合计'], 'No run logged on this day.': ['이 날은 러닝 기록이 없어요.', '这一天没有跑步记录。'],
+  'Style: {0}. Switch to {1}': ['스타일: {0}. {1}(으)로 바꾸기', '风格:{0}。切换为{1}'],
+  'Add a shoe first': ['먼저 신발을 추가하세요', '请先添加跑鞋'], 'Making the picture…': ['이미지를 만드는 중…', '正在生成图片…'], 'Could not make the picture': ['이미지를 만들지 못했어요', '无法生成图片'],
+  'Sharing did not work here. Use “Save image” instead.': ['여기서는 공유가 안 돼요. “이미지 저장”을 사용하세요.', '此处无法分享,请使用“保存图片”。'],
+  'Could not read that image': ['이미지를 읽을 수 없어요', '无法读取该图片'],
+  'Tap the shoe.': ['신발을 눌러 주세요.', '请点按跑鞋。'], 'Cutting out…': ['누끼 따는 중…', '正在抠图…'],
+  'Getting the cut-out tool ready (16 MB, first time only)…': ['누끼 도구를 준비하는 중 (16MB, 처음 한 번만)…', '正在准备抠图工具(16 MB,仅首次)…'],
+  'Looks right? Tap “Use it”. If a part is missing, tap that part too.': ['괜찮아 보이면 “사용하기”를 누르세요. 빠진 부분이 있으면 그 부분도 눌러 주세요.', '没问题就点按“使用”。如有遗漏,再点按遗漏的部分。'],
+  'The cut-out tool needs to download once. Connect to the internet and tap the shoe again.': ['누끼 도구를 한 번 내려받아야 해요. 인터넷에 연결한 뒤 신발을 다시 눌러 주세요.', '抠图工具需要下载一次。请联网后再次点按跑鞋。'],
+  'The cut-out tool could not start on this device. You can keep the original photo.': ['이 기기에서는 누끼 도구를 실행할 수 없어요. 원본 사진을 그대로 쓸 수 있어요.', '抠图工具无法在此设备上运行。可以保留原图。'],
+  "That didn't pick out the shoe. Tap “Start over” and tap the middle of the shoe.": ['신발을 찾지 못했어요. “다시 하기”를 누른 뒤 신발 가운데를 눌러 주세요.', '没有选中跑鞋。请点按“重新开始”,然后点按跑鞋中间。'],
+  'Choose a photo, then tap the shoe to cut it out of the background. A cut-out can be shown on the calendar.': ['사진을 고른 뒤 신발을 누르면 배경에서 오려내요. 누끼 딴 사진은 달력에 표시할 수 있어요.', '选择照片后点按跑鞋即可去除背景。抠好的图可以显示在日历上。'],
+  'Background removed.': ['배경을 지웠어요.', '已去除背景。'],
+  'Background removed. To redo it, choose the photo again.': ['배경을 지웠어요. 다시 하려면 사진을 다시 선택하세요.', '已去除背景。如需重做,请重新选择照片。'],
+  'Tap “Cut out” to remove the background.': ['“누끼 따기”를 눌러 배경을 지우세요.', '点按“抠图”去除背景。'],
+  '{0} is back in rotation': ['{0}: 다시 사용해요', '{0} 已重新启用'],
+  'Retire {0}? It moves to the Retired tab with its stats.': ['{0}을(를) 은퇴시킬까요? 기록과 함께 은퇴 탭으로 옮겨져요.', '要让 {0} 退役吗?它会连同数据移到“已退役”。'],
+  '{0} retired after {1} {2}': ['{0}: {1} {2} 달리고 은퇴했어요', '{0} 跑了 {1} {2} 后退役'],
+  "Delete {0}? This can't be undone.\n\n(Use “Retire” to keep its history.)": ['{0}을(를) 삭제할까요? 되돌릴 수 없어요.\n\n(기록을 남기려면 “은퇴”를 사용하세요.)', '要删除 {0} 吗?此操作无法撤销。\n\n(如需保留记录,请使用“退役”。)'],
+  "Delete {0} and its 1 logged run? This can't be undone.\n\n(Use “Retire” to keep its history.)": ['{0}과(와) 러닝 기록 1개를 삭제할까요? 되돌릴 수 없어요.\n\n(기록을 남기려면 “은퇴”를 사용하세요.)', '要删除 {0} 及其 1 条跑步记录吗?此操作无法撤销。\n\n(如需保留记录,请使用“退役”。)'],
+  "Delete {0} and its {1} logged runs? This can't be undone.\n\n(Use “Retire” to keep its history.)": ['{0}과(와) 러닝 기록 {1}개를 삭제할까요? 되돌릴 수 없어요.\n\n(기록을 남기려면 “은퇴”를 사용하세요.)', '要删除 {0} 及其 {1} 条跑步记录吗?此操作无法撤销。\n\n(如需保留记录,请使用“退役”。)'],
+  ' (retired)': [' (은퇴)', '(已退役)'],
+  '⚠️ {0} passed its {1} {2} limit. Time to retire it.': ['⚠️ {0}: 한계 {1} {2}를 넘었어요. 은퇴시킬 때예요.', '⚠️ {0} 已超过 {1} {2} 的上限,该退役了。'],
+  '⚠️ {0} is at {1}%. Start shopping for a replacement.': ['⚠️ {0}: {1}% 사용했어요. 새 신발을 알아보세요.', '⚠️ {0} 已用 {1}%,该选购新鞋了。'],
+  '+{0} {1} on {2} ({3} total)': ['{2}: +{0} {1} (합계 {3})', '{2} +{0} {1}(合计 {3})'],
+  'Delete this run?': ['이 러닝 기록을 삭제할까요?', '要删除这条跑步记录吗?'],
+  '{0} shoes, {1} runs.': ['신발 {0}개, 러닝 {1}회.', '{0} 双跑鞋,{1} 次跑步。'], 'Last backup: {0}.': ['마지막 백업: {0}.', '上次备份:{0}。'],
+  'Never backed up — do it once in a while, since clearing browser data erases everything.': ['아직 백업한 적이 없어요 — 브라우저 데이터를 지우면 모두 사라지니 가끔 백업해 주세요.', '尚未备份 — 清除浏览器数据会删除所有内容,请定期备份。'],
+  'New shoes will be replaced at {0} {1}.\n\nAlso change your 1 current shoe to {0} {1}?': ['새 신발의 교체 기준은 {0} {1}이에요.\n\n지금 쓰는 신발 1켤레도 {0} {1}(으)로 바꿀까요?', '新跑鞋将在 {0} {1} 时更换。\n\n是否也把现有的 1 双跑鞋改为 {0} {1}?'],
+  'New shoes will be replaced at {0} {1}.\n\nAlso change your {2} current shoes to {0} {1}?': ['새 신발의 교체 기준은 {0} {1}이에요.\n\n지금 쓰는 신발 {2}켤레도 {0} {1}(으)로 바꿀까요?', '新跑鞋将在 {0} {1} 时更换。\n\n是否也把现有的 {2} 双跑鞋改为 {0} {1}?'],
+  'Settings saved': ['설정을 저장했어요', '设置已保存'],
+  'Saved. Add a photo to a shoe to see it on the calendar.': ['저장했어요. 신발에 사진을 추가하면 달력에 보여요.', '已保存。给跑鞋添加照片后即可在日历上显示。'],
+  'Backup restored': ['백업을 복원했어요', '备份已恢复'], 'That file is not a valid Shoe Tracker backup': ['올바른 Shoe Tracker 백업 파일이 아니에요', '该文件不是有效的 Shoe Tracker 备份'],
+  'Replace current data with this backup ({0} shoes, {1} runs)?': ['현재 데이터를 이 백업(신발 {0}개, 러닝 {1}회)으로 바꿀까요?', '要用此备份({0} 双跑鞋,{1} 次跑步)替换当前数据吗?'],
+  'Could not save — storage is full. Remove some shoe photos or export a backup.': ['저장하지 못했어요 — 저장 공간이 가득 찼어요. 신발 사진을 줄이거나 백업을 내보내 주세요.', '无法保存 — 存储空间已满。请删除一些跑鞋照片或导出备份。'],
+  'Blue': ['블루', '蓝色'], 'Lilac': ['라일락', '淡紫色'], 'Rose': ['로즈', '玫瑰色'], 'Sage': ['세이지', '灰绿色'], 'Sand': ['샌드', '沙色'], 'Grey': ['그레이', '灰色'],
+  'Volt': ['볼트', '荧光黄'], 'White': ['화이트', '白色'], 'Pink': ['핑크', '粉色'], 'Orange': ['오렌지', '橙色'], 'Cyan': ['시안', '青色'],
+};
+function tr(key, ...args) {
+  const e = I18N[key], i = S.lang === 'ko' ? 0 : S.lang === 'zh' ? 1 : -1;
+  return (i < 0 || !e ? key : e[i]).replace(/\{(\d)\}/g, (_, n) => args[n] ?? '');
+}
+// Dates follow the chosen language. English keeps the device's own English format if it has one.
+const LOCALE = () => S.lang === 'ko' ? 'ko-KR' : S.lang === 'zh' ? 'zh-CN' : /^en\b/i.test(navigator.language || '') ? undefined : 'en-US';
+// Static text in the page: data-t (text), data-t-aria, data-t-ph (placeholder), data-t-alt. {0} = unit, {1} = currency.
+function applyI18n() {
+  const a = [U(), S.currency ? `(${S.currency})` : ''], f = k => tr(k, ...a).replace(/ {2,}/g, ' ');
+  document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : S.lang;
+  document.querySelectorAll('[data-t]').forEach(e => e.textContent = f(e.dataset.t));
+  document.querySelectorAll('[data-t-aria]').forEach(e => e.setAttribute('aria-label', f(e.dataset.tAria)));
+  document.querySelectorAll('[data-t-ph]').forEach(e => e.placeholder = f(e.dataset.tPh));
+  document.querySelectorAll('[data-t-alt]').forEach(e => e.alt = f(e.dataset.tAlt));
+}
 
 // ---------- distance on screen ----------
 const U = () => S.unit;
@@ -527,7 +629,7 @@ function stats(sh) {
   return { km, pct, n, days, months: days / 30.44, cpk: sh.price > 0 && km > 0 ? sh.price / kmTo(km, S.unit) : null };
 }
 const color = p => p >= .9 ? 'var(--bad)' : p >= .7 ? 'var(--warn)' : 'var(--ok)';
-const ageStr = m => m < 1 ? Math.round(m * 30.44) + ' d' : m < 12 ? Math.floor(m) + ' mo' : (m / 12).toFixed(1) + ' yr';
+const ageStr = m => m < 1 ? tr('{0} d', Math.round(m * 30.44)) : m < 12 ? tr('{0} mo', Math.floor(m)) : tr('{0} yr', (m / 12).toFixed(1));
 const initials = n => n.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 const money = v => esc(S.currency) + v.toLocaleString(undefined, { maximumFractionDigits: v < 10 ? 2 : 0 });
 const active = () => S.shoes.filter(s => !s.retired);
@@ -543,8 +645,8 @@ const CAL_NAMES = { soft: ['Blue', 'Lilac', 'Rose', 'Sage', 'Sand', 'Grey'], con
 const calPal = idx => CAL_PAL[S.calTheme][validColor(idx) ? idx : 0];
 const calVars = idx => { const [c, k] = calPal(idx); return `--c:${c};--k:${k}`; };
 const calDot = idx => calPal(idx)[S.calTheme === 'soft' ? 1 : 0];
-const calShoe = id => { const sh = shoeById(id); return sh ? { name: sh.name, type: sh.type || '', idx: sh.colorIdx, code: initials(sh.name), photo: sh.photo, cut: !!sh.photoCut } : { name: '(deleted shoe)', type: '', idx: 0, code: '?', photo: null, cut: false }; };
-const loc = (d, o) => d.toLocaleDateString(undefined, o);
+const calShoe = id => { const sh = shoeById(id); return sh ? { name: sh.name, type: sh.type || '', idx: sh.colorIdx, code: initials(sh.name), photo: sh.photo, cut: !!sh.photoCut } : { name: tr('(deleted shoe)'), type: '', idx: 0, code: '?', photo: null, cut: false }; };
+const loc = (d, o) => d.toLocaleDateString(LOCALE(), o);
 
 // ---------- views ----------
 function thumb(sh) { return `<div class="thumb${sh.photo && sh.photoCut ? ' cut' : ''}" style="${calVars(sh.colorIdx)}">${sh.photo ? `<img src="${esc(sh.photo)}" alt="">` : esc(initials(sh.name))}</div>`; }
@@ -552,15 +654,15 @@ function thumb(sh) { return `<div class="thumb${sh.photo && sh.photoCut ? ' cut'
 function card(sh) {
   const s = stats(sh), warns = [];
   if (!sh.retired) {
-    if (s.pct >= 1) warns.push('Past its limit — time to replace');
-    else if (s.pct >= .9) warns.push(`${fmtD(sh.limitKm - s.km)} ${U()} left — shop for a replacement`);
+    if (s.pct >= 1) warns.push(tr('Past its limit — time to replace'));
+    else if (s.pct >= .9) warns.push(tr('{0} {1} left — shop for a replacement', fmtD(sh.limitKm - s.km), U()));
   }
-  const when = sh.retired ? `${fmtDate(sh.start)} → ${fmtDate(sh.retired)} (${ageStr(s.months)})` : ageStr(s.months) + ' old';
+  const when = sh.retired ? `${fmtDate(sh.start)} → ${fmtDate(sh.retired)} (${ageStr(s.months)})` : tr('{0} old', ageStr(s.months));
   return `<button class="card" data-shoe="${sh.id}">${thumb(sh)}
     <div class="info">
-      <div class="top"><span class="name">${esc(sh.name)}</span>${!sh.retired && S.defaultShoeId === sh.id ? '<span class="star" title="Default shoe">★</span>' : ''}${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}</div>
+      <div class="top"><span class="name">${esc(sh.name)}</span>${!sh.retired && S.defaultShoeId === sh.id ? `<span class="star" title="${esc(tr('Default shoe'))}">★</span>` : ''}${sh.type ? `<span class="tag">${esc(tr(sh.type))}</span>` : ''}</div>
       <div class="bar"><i style="width:${Math.min(s.pct, 1) * 100}%;background:${color(s.pct)}"></i></div>
-      <div class="meta"><b>${fmtD(s.km)}</b> / ${fmtD(sh.limitKm)} ${U()} · ${Math.round(s.pct * 100)}% · ${s.n} run${s.n === 1 ? '' : 's'}</div>
+      <div class="meta"><b>${fmtD(s.km)}</b> / ${fmtD(sh.limitKm)} ${U()} · ${Math.round(s.pct * 100)}% · ${tr(s.n === 1 ? '{0} run' : '{0} runs', s.n)}</div>
       <div class="meta">${when}${s.cpk != null ? ` · ${money(s.cpk)}/${U()}` : ''}</div>
       ${warns.map(w => `<div class="warn">${esc(w)}</div>`).join('')}
     </div></button>`;
@@ -568,41 +670,41 @@ function card(sh) {
 
 function viewShoes() {
   const list = active();
-  if (!list.length) return `<div class="empty">No shoes yet.<br><button class="btn pri" data-act="addShoe">Add your first pair</button></div>`;
+  if (!list.length) return `<div class="empty">${tr('No shoes yet.')}<br><button class="btn pri" data-act="addShoe">${tr('Add your first pair')}</button></div>`;
   const sorted = [...list].sort((a, b) => stats(b).pct - stats(a).pct);
   const alerts = [];
   for (const sh of sorted) {
     const s = stats(sh);
-    if (s.pct >= 1) alerts.push(`<div class="alert">${esc(sh.name)} is past ${fmtD(sh.limitKm)} ${U()}. Retire it.</div>`);
-    else if (s.pct >= .9) alerts.push(`<div class="alert w">${esc(sh.name)} is at ${Math.round(s.pct * 100)}%. Replace soon.</div>`);
+    if (s.pct >= 1) alerts.push(`<div class="alert">${esc(tr('{0} is past {1} {2}. Retire it.', sh.name, fmtD(sh.limitKm), U()))}</div>`);
+    else if (s.pct >= .9) alerts.push(`<div class="alert w">${esc(tr('{0} is at {1}%. Replace soon.', sh.name, Math.round(s.pct * 100)))}</div>`);
   }
   return (alerts.length ? `<div class="alerts">${alerts.join('')}</div>` : '') + `<div class="list">${sorted.map(card).join('')}</div>`;
 }
 
 function viewRetired() {
   const list = S.shoes.filter(s => s.retired).sort((a, b) => b.retired.localeCompare(a.retired));
-  if (!list.length) return `<div class="empty">No retired shoes yet.<br>Tap a shoe and choose “Retire” when it's done.</div>`;
+  if (!list.length) return `<div class="empty">${tr('No retired shoes yet.')}<br>${tr("Tap a shoe and choose “Retire” when it's done.")}</div>`;
   const total = list.reduce((a, sh) => a + stats(sh).km, 0);
-  return `<div class="summary"><div class="stat"><div class="v">${list.length}</div><div class="l">pairs retired</div></div>
-    <div class="stat"><div class="v">${fmtD(total / list.length)}</div><div class="l">avg ${U()} per pair</div></div></div>
+  return `<div class="summary"><div class="stat"><div class="v">${list.length}</div><div class="l">${tr('pairs retired')}</div></div>
+    <div class="stat"><div class="v">${fmtD(total / list.length)}</div><div class="l">${tr('avg {0} per pair', U())}</div></div></div>
     <div class="list">${list.map(card).join('')}</div>`;
 }
 
 function viewRuns() {
   const runs = [...S.runs].sort((a, b) => b.date.localeCompare(a.date) || (b.t || 0) - (a.t || 0));
-  if (!runs.length) return `<div class="empty">No runs logged yet.<br>Tap “+ Run” after each run.</div>`;
+  if (!runs.length) return `<div class="empty">${tr('No runs logged yet.')}<br>${tr('Tap “+ Run” after each run.')}</div>`;
   const ym = today().slice(0, 7), y = today().slice(0, 4);
   const sum = f => runs.filter(f).reduce((a, r) => a + r.km, 0);
-  let html = `<div class="summary"><div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(ym)))}</div><div class="l">${U()} this month</div></div>
-    <div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(y)))}</div><div class="l">${U()} this year</div></div></div>`;
+  let html = `<div class="summary"><div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(ym)))}</div><div class="l">${tr('{0} this month', U())}</div></div>
+    <div class="stat"><div class="v">${fmtD(sum(r => r.date.startsWith(y)))}</div><div class="l">${tr('{0} this year', U())}</div></div></div>`;
   const groups = new Map();
   for (const r of runs) { const k = r.date.slice(0, 7); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
   for (const [k, rs] of groups) {
-    const label = new Date(k + '-01T00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    const label = loc(pd(k), { month: 'long', year: 'numeric' });
     html += `<div class="month"><span>${label}</span><span>${fmtD(rs.reduce((a, r) => a + r.km, 0))} ${U()}</span></div><div class="runs">`;
     for (const r of rs) {
       const sh = calShoe(r.shoeId);
-      const d = new Date(r.date + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', weekday: 'short' });
+      const d = loc(pd(r.date), { day: 'numeric', weekday: 'short' });
       html += `<div class="run" data-run="${r.id}"><span class="d">${d}</span><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span><span class="k">${fmtD(r.km)} ${U()}</span></div>`;
     }
     html += '</div>';
@@ -627,12 +729,12 @@ function viewCalendar() {
   const soft = S.calTheme === 'soft', ws = S.weekStart, td = today(), first = pd(calMonth);
   const days = dayIndex(S.runs), sum = monthSummary(S.runs, calMonth), weeks = weekTotals(S.runs, calMonth, ws), streak = weekStreak(S.runs, td, ws);
   const focusDay = calSel && calSel.startsWith(calMonth) ? calSel : td.startsWith(calMonth) ? td : calMonth + '-01';
-  const head = `<div class="cal-head"><div class="cal-title"><h2><button type="button" data-cal="today" aria-label="${esc(loc(first, { month: 'long', year: 'numeric' }))}. Go to current month">${esc(loc(first, { month: soft ? 'long' : 'short' }))}</button></h2><span class="cal-year">${first.getFullYear()}</span></div>
-    <div class="cal-nav"><button type="button" data-cal="prev" aria-label="Previous month">${CHEV('M15 5l-7 7 7 7')}</button><button type="button" data-cal="next" aria-label="Next month">${CHEV('M9 5l7 7-7 7')}</button></div></div>`;
-  const runsLbl = sum.count === 1 ? 'run' : 'runs';
+  const head = `<div class="cal-head"><div class="cal-title"><h2><button type="button" data-cal="today" aria-label="${esc(tr('{0}. Go to current month', loc(first, { month: 'long', year: 'numeric' })))}">${esc(loc(first, { month: soft ? 'long' : 'short' }))}</button></h2><span class="cal-year">${first.getFullYear()}</span></div>
+    <div class="cal-nav"><button type="button" data-cal="prev" aria-label="${tr('Previous month')}">${CHEV('M15 5l-7 7 7 7')}</button><button type="button" data-cal="next" aria-label="${tr('Next month')}">${CHEV('M9 5l7 7-7 7')}</button></div></div>`;
+  const runsKey = sum.count === 1 ? 'run' : 'runs';
   const stats = soft
-    ? `<div class="cal-stats"><span class="k">${d1(sum.km)} ${U()}</span><span>${sum.count} ${runsLbl}</span>${streak >= 2 ? `<span>${streak}-week streak</span>` : ''}</div>`
-    : `<div class="cal-stats"><div><small>${U().toUpperCase()}</small><b>${d1(sum.km)}</b></div><div><small>${runsLbl.toUpperCase()}</small><b>${sum.count}</b></div>${streak >= 2 ? `<div><small>STREAK WK</small><b>${streak}</b></div>` : ''}</div>`;
+    ? `<div class="cal-stats"><span class="k">${d1(sum.km)} ${U()}</span><span>${tr('{0} ' + runsKey, sum.count)}</span>${streak >= 2 ? `<span>${tr('{0}-week streak', streak)}</span>` : ''}</div>`
+    : `<div class="cal-stats"><div><small>${U().toUpperCase()}</small><b>${d1(sum.km)}</b></div><div><small>${tr(runsKey).toUpperCase()}</small><b>${sum.count}</b></div>${streak >= 2 ? `<div><small>${tr('STREAK WK')}</small><b>${streak}</b></div>` : ''}</div>`;
   const wd = `<div class="cal-wd" aria-hidden="true">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span>${esc(loc(new Date(2023, 0, 1 + ws + i), { weekday: 'short' }))}</span>`).join('')}</div>`;
   const cell = date => {
     if (!date) return '<span></span>';
@@ -644,7 +746,7 @@ function viewCalendar() {
       body = pic ? `<span class="ph${sh.cut ? '' : ' sq'}" data-s="${esc(d.mainShoeId)}"></span>` : `<span class="km">${cellD(d.km)}</span>`;
       code = `<span class="code">${esc(sh.code)}</span>`;
       if (d.runs.length > 1) more = `<span class="more">+${d.runs.length - 1}</span>`;
-      label += `: ${d1(d.km)} ${U()}, ${[...new Set(d.runs.map(r => calShoe(r.shoeId).name))].join(', ')}${d.runs.length > 1 ? `, ${d.runs.length} runs` : ''}`;
+      label += `: ${d1(d.km)} ${U()}, ${[...new Set(d.runs.map(r => calShoe(r.shoeId).name))].join(', ')}${d.runs.length > 1 ? tr(', {0} runs', d.runs.length) : ''}`;
     } else if (date > td) cls.push('fut');
     if (isToday) cls.push('today');
     const inner = soft ? `<span class="n">${n}</span>${more}${body}` : `<span class="top"><span class="n">${pad2(n)}</span>${more || code}</span>${body}`;
@@ -654,7 +756,7 @@ function viewCalendar() {
   const legend = sum.byShoe.length ? `<div class="cal-legend">${sum.byShoe.map(e => { const sh = calShoe(e.shoeId); return `<span><i style="${calVars(sh.idx)}">${soft ? '' : esc(sh.code)}</i>${esc(sh.name)} <b>${d1(e.km)}</b></span>`; }).join('')}</div>` : '';
   const max = Math.max(...weeks.map(w => w.km)), labels = weekLabels(weeks);
   const rows = weeks.map((w, i) => `<span class="l">${esc(labels[i])}</span><span class="t">${w.km > 0 ? `<i style="width:${Math.round(w.km / max * 100)}%"></i>` : ''}</span><span class="v">${w.km > 0 ? d1(w.km) : soft ? '–' : '--'}</span>`).join('');
-  return `<div class="calv">${head}${stats}<div class="cal-block">${wd}${grid}</div>${legend}<section class="cal-weeks"><h3>Weekly ${U()}</h3><div class="cal-rows">${rows}</div></section></div>`;
+  return `<div class="calv">${head}${stats}<div class="cal-block">${wd}${grid}</div>${legend}<section class="cal-weeks"><h3>${tr('Weekly {0}', U())}</h3><div class="cal-rows">${rows}</div></section></div>`;
 }
 
 // Long month names ("September") or narrow screens: shrink the month name until the header row fits.
@@ -672,8 +774,8 @@ function openDay(date) {
   const d = dayIndex(S.runs).get(date);
   $('#dayTitle').textContent = loc(pd(date), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   $('#dayBody').innerHTML = d
-    ? `<div class="daysum"><b>${d1(d.km)} ${U()}</b> total</div><div class="runs">${d.runs.map(r => { const sh = calShoe(r.shoeId); return `<button type="button" class="run" data-run="${r.id}"><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span>${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}<span class="k">${d1(r.km)} ${U()}</span></button>`; }).join('')}</div>`
-    : '<div class="empty">No run logged on this day.</div>';
+    ? `<div class="daysum"><b>${d1(d.km)} ${U()}</b> ${tr('total')}</div><div class="runs">${d.runs.map(r => { const sh = calShoe(r.shoeId); return `<button type="button" class="run" data-run="${r.id}"><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span>${sh.type ? `<span class="tag">${esc(tr(sh.type))}</span>` : ''}<span class="k">${d1(r.km)} ${U()}</span></button>`; }).join('')}</div>`
+    : `<div class="empty">${tr('No run logged on this day.')}</div>`;
   $('#dayDlg').showModal();
 }
 $('#dayBody').onclick = e => { const r = e.target.closest('[data-run]'); if (r) { $('#dayDlg').close(); openRun(r.dataset.run); } };
@@ -685,8 +787,8 @@ function render() {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   document.body.className = `look-${S.calTheme}${cal ? ' cal' : ''}`;
   $('meta[name=theme-color]').content = soft ? '#FFFFFF' : '#0A0A0A';
-  $('#styleBtn').setAttribute('aria-label', `Style: ${soft ? 'Soft' : 'Contrast'}. Switch to ${soft ? 'Contrast' : 'Soft'}`);
-  document.querySelectorAll('.u').forEach(e => e.textContent = U());
+  $('#styleBtn').setAttribute('aria-label', tr('Style: {0}. Switch to {1}', tr(soft ? 'Soft' : 'Contrast'), tr(soft ? 'Contrast' : 'Soft')));
+  applyI18n();
   // shoe photos for calendar cells: one CSS rule per shoe, so a photo is not repeated in every cell
   $('#pics').textContent = cal && S.calCell === 'photo' ? S.shoes.filter(s => s.photo && /^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(s.photo)).map(s => `.ph[data-s="${String(s.id).replace(/["\\\n]/g, '')}"]{background-image:url("${s.photo}")}`).join('') : '';
   $('#view').innerHTML = tab === 'shoes' ? viewShoes() : tab === 'calendar' ? viewCalendar() : tab === 'runs' ? viewRuns() : viewRetired();
@@ -749,17 +851,17 @@ async function shareCanvas() {
   y += hTitle + 14;
 
   // stats
-  const runsLbl = sum.count === 1 ? 'run' : 'runs';
+  const runsKey = sum.count === 1 ? 'run' : 'runs';
   if (soft) {
     let x = x0;
-    [`${d1(sum.km)} ${U()}`, `${sum.count} ${runsLbl}`, streak >= 2 ? `${streak}-week streak` : ''].filter(Boolean).forEach((s, i) => {
+    [`${d1(sum.km)} ${U()}`, tr('{0} ' + runsKey, sum.count), streak >= 2 ? tr('{0}-week streak', streak) : ''].filter(Boolean).forEach((s, i) => {
       const w = meas(s, `600 13px ${SANS}`) + 28;
       if (i === 0) { box(x, y + 1, w, 34, 17); fill(T.ink); } else { box(x + .75, y + .75, w - 1.5, 34.5, 17.25); stroke(T.line, 1.5); }
       text(s, x + 14, y + 22.5, `600 13px ${SANS}`, i === 0 ? '#FFFFFF' : T.ink);
       x += w + 8;
     });
   } else {
-    const items = [[U().toUpperCase(), d1(sum.km)], [runsLbl.toUpperCase(), String(sum.count)]]; if (streak >= 2) items.push(['STREAK WK', String(streak)]);
+    const items = [[U().toUpperCase(), d1(sum.km)], [tr(runsKey).toUpperCase(), String(sum.count)]]; if (streak >= 2) items.push([tr('STREAK WK'), String(streak)]);
     const bw = cw / items.length;
     box(x0, y, bw, hStats); fill(T.accent);
     items.forEach(([l, v], i) => {
@@ -822,7 +924,7 @@ async function shareCanvas() {
   y += hLeg;
 
   // weekly distance
-  if (soft) text(`Weekly ${U()}`, x0, y + 13, `700 13px ${SANS}`, T.ink); else text(`WEEKLY ${U().toUpperCase()}`, x0, y + 14, `400 14px ${DISP}`, T.ink, 'left', .5);
+  if (soft) text(tr('Weekly {0}', U()), x0, y + 13, `700 13px ${SANS}`, T.ink); else text(tr('Weekly {0}', U()).toUpperCase(), x0, y + 14, `400 14px ${DISP}`, T.ink, 'left', .5);
   y += 25;
   const labFont = soft ? `12px ${SANS}` : `700 11px ${MONO}`, labels = weekLabels(weeks).map(s => soft ? s : s.toUpperCase());
   const labW = Math.max(soft ? 74 : 78, ...labels.map(s => meas(s, labFont))), valW = soft ? 36 : 40, tx = x0 + labW + 10, tw = cw - labW - valW - 20, max = Math.max(...weeks.map(w => w.km));
@@ -840,20 +942,20 @@ async function shareCanvas() {
 let shareBlob = null;
 const shareFile = () => new File([shareBlob], `shoe-tracker-${calMonth}.png`, { type: 'image/png' });
 $('#shareBtn').onclick = async () => {
-  if (!S.shoes.length) return toast('Add a shoe first');
-  toast('Making the picture…');
+  if (!S.shoes.length) return toast(tr('Add a shoe first'));
+  toast(tr('Making the picture…'));
   try {
     const cv = await shareCanvas();
     shareBlob = await new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(), 'image/png'));
     const img = $('#shareImg'); if (img.src) URL.revokeObjectURL(img.src); img.src = URL.createObjectURL(shareBlob);
     $('#shareGo').hidden = !(navigator.canShare && navigator.canShare({ files: [shareFile()] }));
     $('#shareDlg').showModal();
-  } catch (e) { toast('Could not make the picture'); }
+  } catch (e) { toast(tr('Could not make the picture')); }
 };
 $('#shareSave').onclick = () => download(`shoe-tracker-${calMonth}.png`, shareBlob, 'image/png');
 $('#shareGo').onclick = async () => {
   try { await navigator.share({ files: [shareFile()], title: 'Shoe Tracker' }); }
-  catch (e) { if (!e || e.name !== 'AbortError') toast('Sharing did not work here. Use “Save image” instead.'); }
+  catch (e) { if (!e || e.name !== 'AbortError') toast(tr('Sharing did not work here. Use “Save image” instead.')); }
 };
 
 // ---------- toast ----------
@@ -999,9 +1101,9 @@ function drawCut() {
   $('#cutUse').disabled = !cutOut || cutBusy; $('#cutReset').disabled = !cutPts.length || cutBusy;
 }
 async function openCut() {
-  try { cutSrc = ph.src || toCanvas(await loadImg(ph.orig), 1024); } catch (e) { return toast('Could not read that image'); }
+  try { cutSrc = ph.src || toCanvas(await loadImg(ph.orig), 1024); } catch (e) { return toast(tr('Could not read that image')); }
   cutPts = []; cutOut = null; cutBusy = false; drawCut();
-  $('#cutNote').textContent = 'Tap the shoe.';
+  $('#cutNote').textContent = tr('Tap the shoe.');
   $('#cutDlg').showModal();
 }
 $('#cutCv').onclick = async e => {
@@ -1009,15 +1111,15 @@ $('#cutCv').onclick = async e => {
   const b = e.currentTarget.getBoundingClientRect();
   cutPts.push({ x: Math.min(.999, Math.max(0, (e.clientX - b.left) / b.width)), y: Math.min(.999, Math.max(0, (e.clientY - b.top) / b.height)) });
   cutBusy = true; drawCut();
-  $('#cutNote').textContent = segmenterReady ? 'Cutting out…' : 'Getting the cut-out tool ready (16 MB, first time only)…';
-  try { cutOut = await segmentAt(cutSrc, cutPts); $('#cutNote').textContent = 'Looks right? Tap “Use it”. If a part is missing, tap that part too.'; }
-  catch (err) { cutPts.pop(); $('#cutNote').textContent = navigator.onLine === false ? 'The cut-out tool needs to download once. Connect to the internet and tap the shoe again.' : 'The cut-out tool could not start on this device. You can keep the original photo.'; }
+  $('#cutNote').textContent = tr(segmenterReady ? 'Cutting out…' : 'Getting the cut-out tool ready (16 MB, first time only)…');
+  try { cutOut = await segmentAt(cutSrc, cutPts); $('#cutNote').textContent = tr('Looks right? Tap “Use it”. If a part is missing, tap that part too.'); }
+  catch (err) { cutPts.pop(); $('#cutNote').textContent = tr(navigator.onLine === false ? 'The cut-out tool needs to download once. Connect to the internet and tap the shoe again.' : 'The cut-out tool could not start on this device. You can keep the original photo.'); }
   cutBusy = false; drawCut();
 };
-$('#cutReset').onclick = () => { cutPts = []; cutOut = null; drawCut(); $('#cutNote').textContent = 'Tap the shoe.'; };
+$('#cutReset').onclick = () => { cutPts = []; cutOut = null; drawCut(); $('#cutNote').textContent = tr('Tap the shoe.'); };
 $('#cutUse').onclick = () => {
   const c = cutOut && cutout(toCanvas(cutOut, 1024));
-  if (!c) { $('#cutNote').textContent = "That didn't pick out the shoe. Tap “Start over” and tap the middle of the shoe."; return; }
+  if (!c) { $('#cutNote').textContent = tr("That didn't pick out the shoe. Tap “Start over” and tap the middle of the shoe."); return; }
   ph.cut = thumbPng(c); ph.useCut = true; ph.tried = true;
   $('#cutDlg').close(); setPhotoPrev();
 };
@@ -1027,34 +1129,33 @@ $('#cutUse').onclick = () => {
 // tried = the quick plain-background cut-out was attempted, src = the full picture (canvas) while it is still at hand.
 const noPhoto = () => ({ orig: null, cut: null, useCut: false, tried: false, src: null });
 let editShoe = null, ph = noPhoto(), pendingColor = 0;
-$('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
 function setPhotoPrev() {
   const src = ph.useCut ? ph.cut : ph.orig, box = $('#sPhotoPrev'), b = $('#sPhotoCut');
   box.className = 'thumb' + (src && ph.useCut ? ' cut' : '');
   box.innerHTML = src ? `<img src="${esc(src)}" alt="">` : '👟';
   $('#sPhotoDel').hidden = !src;
   b.hidden = !src || (ph.useCut && !ph.orig);
-  b.textContent = ph.useCut ? 'Original' : 'Cut out';
-  $('#sPhotoNote').textContent = !src ? 'Choose a photo, then tap the shoe to cut it out of the background. A cut-out can be shown on the calendar.'
-    : ph.useCut ? (ph.orig ? 'Background removed.' : 'Background removed. To redo it, choose the photo again.') : 'Tap “Cut out” to remove the background.';
+  b.textContent = tr(ph.useCut ? 'Original' : 'Cut out');
+  $('#sPhotoNote').textContent = tr(!src ? 'Choose a photo, then tap the shoe to cut it out of the background. A cut-out can be shown on the calendar.'
+    : ph.useCut ? (ph.orig ? 'Background removed.' : 'Background removed. To redo it, choose the photo again.') : 'Tap “Cut out” to remove the background.');
 }
 function setColors() {
-  $('#sColors').innerHTML = CAL_PAL[S.calTheme].map(([c], i) => `<button type="button" class="sw" role="radio" aria-checked="${i === pendingColor}" aria-label="${CAL_NAMES[S.calTheme][i]}" data-color="${i}" style="--c:${c};--d:${calDot(i)}"><i></i></button>`).join('');
+  $('#sColors').innerHTML = CAL_PAL[S.calTheme].map(([c], i) => `<button type="button" class="sw" role="radio" aria-checked="${i === pendingColor}" aria-label="${tr(CAL_NAMES[S.calTheme][i])}" data-color="${i}" style="--c:${c};--d:${calDot(i)}"><i></i></button>`).join('');
 }
 $('#sColors').onclick = e => { const b = e.target.closest('[data-color]'); if (b) { pendingColor = +b.dataset.color; setColors(); $(`#sColors [data-color="${pendingColor}"]`).focus(); } };
 function openShoe(id) {
   editShoe = id ? shoeById(id) : null;
   const sh = editShoe || { name: '', type: 'Daily', start: today(), startKm: 0, limitKm: S.limitKm, price: '' };
-  $('#shoeTitle').textContent = editShoe ? 'Edit shoe' : 'Add shoe';
+  $('#shoeTitle').textContent = tr(editShoe ? 'Edit shoe' : 'Add shoe');
+  $('#sType').innerHTML = TYPES.map(x => `<option value="${x}">${esc(tr(x))}</option>`).join('');
   $('#sName').value = sh.name; $('#sType').value = sh.type || 'Daily'; $('#sStart').value = sh.start;
   setD($('#sStartKm'), sh.startKm || 0, 1); setD($('#sLimit'), sh.limitKm, 0); $('#sPrice').value = sh.price || '';
-  $('#curLbl').textContent = S.currency ? `(${S.currency})` : '';
   $('#sDefault').checked = editShoe ? S.defaultShoeId === sh.id : active().length === 0;
   ph = !sh.photo ? noPhoto() : sh.photoCut ? { ...noPhoto(), cut: sh.photo, useCut: true, tried: true } : { ...noPhoto(), orig: sh.photo };
   setPhotoPrev();
   pendingColor = editShoe ? sh.colorIdx : freeColor(S.shoes, S.shoes.length); setColors();
   $('#sDelete').hidden = !editShoe; $('#sRetire').hidden = !editShoe;
-  $('#sRetire').textContent = editShoe && editShoe.retired ? 'Un-retire' : 'Retire';
+  $('#sRetire').textContent = tr(editShoe && editShoe.retired ? 'Un-retire' : 'Retire');
   $('#shoeDlg').showModal();
 }
 $('#sPhotoPick').onclick = () => $('#sPhoto').click();
@@ -1069,7 +1170,7 @@ $('#sPhoto').onchange = async e => {
     try { ph.cut = cutThumb(img); } catch (err) {}   // plain background: instant
     ph.useCut = !!ph.cut; setPhotoPrev();
     if (!ph.cut) openCut();                           // anything else: tap the shoe
-  } catch (err) { toast('Could not read that image'); }
+  } catch (err) { toast(tr('Could not read that image')); }
   URL.revokeObjectURL(url);
 };
 $('#sPhotoCut').onclick = async () => {
@@ -1097,18 +1198,19 @@ $('#shoeForm').onsubmit = e => {
 };
 $('#sRetire').onclick = () => {
   const sh = editShoe; if (!sh) return;
-  if (sh.retired) { sh.retired = null; toast(`${sh.name} is back in rotation`); }
+  if (sh.retired) { sh.retired = null; toast(tr('{0} is back in rotation', sh.name)); }
   else {
-    if (!confirm(`Retire ${sh.name}? It moves to the Retired tab with its stats.`)) return;
+    if (!confirm(tr('Retire {0}? It moves to the Retired tab with its stats.', sh.name))) return;
     sh.retired = today(); if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
-    toast(`${sh.name} retired after ${fmtD(stats(sh).km)} ${U()}`);
+    toast(tr('{0} retired after {1} {2}', sh.name, fmtD(stats(sh).km), U()));
   }
   save(); $('#shoeDlg').close(); render();
 };
 $('#sDelete').onclick = () => {
   const sh = editShoe; if (!sh) return;
   const n = S.runs.filter(r => r.shoeId === sh.id).length;
-  if (!confirm(`Delete ${sh.name}${n ? ` and its ${n} logged run${n === 1 ? '' : 's'}` : ''}? This can't be undone.\n\n(Use “Retire” to keep its history.)`)) return;
+  const tail = "? This can't be undone.\n\n(Use “Retire” to keep its history.)";
+  if (!confirm(tr(!n ? 'Delete {0}' + tail : n === 1 ? 'Delete {0} and its 1 logged run' + tail : 'Delete {0} and its {1} logged runs' + tail, sh.name, n))) return;
   S.shoes = S.shoes.filter(s => s.id !== sh.id); S.runs = S.runs.filter(r => r.shoeId !== sh.id);
   if (S.defaultShoeId === sh.id) S.defaultShoeId = null;
   save(); $('#shoeDlg').close(); render();
@@ -1120,12 +1222,12 @@ function openRun(id, date) {
   editRun = id ? S.runs.find(r => r.id === id) : null;
   const shoes = active();
   if (editRun && !shoes.some(s => s.id === editRun.shoeId)) { const sh = shoeById(editRun.shoeId); if (sh) shoes.push(sh); }
-  if (!shoes.length) { toast('Add a shoe first'); openShoe(); return; }
-  $('#rShoe').innerHTML = shoes.map(s => `<option value="${s.id}">${esc(s.name)}${s.retired ? ' (retired)' : ''}</option>`).join('');
+  if (!shoes.length) { toast(tr('Add a shoe first')); openShoe(); return; }
+  $('#rShoe').innerHTML = shoes.map(s => `<option value="${s.id}">${esc(s.name)}${s.retired ? tr(' (retired)') : ''}</option>`).join('');
   const lastShoe = [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0)).find(r => shoes.some(s => s.id === r.shoeId && !s.retired));
   $('#rShoe').value = editRun ? editRun.shoeId : (shoes.some(s => s.id === S.defaultShoeId) ? S.defaultShoeId : lastShoe ? lastShoe.shoeId : shoes[0].id);
   setD($('#rKm'), editRun ? editRun.km : ''); $('#rDate').value = editRun ? editRun.date : date || today();
-  $('#runTitle').textContent = editRun ? 'Edit run' : 'Log run';
+  $('#runTitle').textContent = tr(editRun ? 'Edit run' : 'Log run');
   $('#rDelete').hidden = !editRun;
   // quick-pick chips from recent distances
   const seen = []; for (const r of [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0))) { if (!seen.includes(r.km)) seen.push(r.km); if (seen.length >= 6) break; }
@@ -1142,36 +1244,37 @@ $('#runForm').onsubmit = e => {
   else S.runs.push({ id: uid(), shoeId, km, date: $('#rDate').value, t: Date.now() });
   save(); $('#runDlg').close(); render();
   const after = stats(sh).pct;
-  if (before < 1 && after >= 1) toast(`⚠️ ${sh.name} passed its ${fmtD(sh.limitKm)} ${U()} limit. Time to retire it.`);
-  else if (before < .9 && after >= .9) toast(`⚠️ ${sh.name} is at ${Math.round(after * 100)}%. Start shopping for a replacement.`);
-  else if (!editRun) toast(`+${fmtD(km)} ${U()} on ${sh.name} (${fmtD(stats(sh).km)} total)`);
+  if (before < 1 && after >= 1) toast(tr('⚠️ {0} passed its {1} {2} limit. Time to retire it.', sh.name, fmtD(sh.limitKm), U()));
+  else if (before < .9 && after >= .9) toast(tr('⚠️ {0} is at {1}%. Start shopping for a replacement.', sh.name, Math.round(after * 100)));
+  else if (!editRun) toast(tr('+{0} {1} on {2} ({3} total)', fmtD(km), U(), sh.name, fmtD(stats(sh).km)));
 };
 $('#rDelete').onclick = () => {
-  if (!editRun || !confirm('Delete this run?')) return;
+  if (!editRun || !confirm(tr('Delete this run?'))) return;
   S.runs = S.runs.filter(r => r !== editRun); save(); $('#runDlg').close(); render();
 };
 
 // ---------- settings / backup ----------
 function openSettings() {
-  $('#stUnit').value = S.unit; $('#stLimitU').textContent = S.unit; setD($('#stLimit'), S.limitKm, 0);
+  $('#stLang').value = S.lang; $('#stUnit').value = S.unit; $('#stLimitLbl').textContent = tr('Replace shoes at ({0})', S.unit); setD($('#stLimit'), S.limitKm, 0);
   $('#stCal').value = S.calTheme; $('#stWeek').value = S.weekStart; $('#stCell').value = S.calCell; $('#stCur').value = S.currency;
-  $('#bkInfo').textContent = `${S.shoes.length} shoes, ${S.runs.length} runs. ` + (S.lastBackup ? `Last backup: ${fmtDate(S.lastBackup)}.` : 'Never backed up — do it once in a while, since clearing browser data erases everything.');
+  $('#bkInfo').textContent = tr('{0} shoes, {1} runs.', S.shoes.length, S.runs.length) + ' ' + (S.lastBackup ? tr('Last backup: {0}.', fmtDate(S.lastBackup)) : tr('Never backed up — do it once in a while, since clearing browser data erases everything.'));
   $('#setDlg').showModal();
 }
-$('#stUnit').onchange = () => { const u = $('#stUnit').value === 'mi' ? 'mi' : 'km'; setD($('#stLimit'), getD($('#stLimit')), 0, u); $('#stLimitU').textContent = u; };
+$('#stUnit').onchange = () => { const u = $('#stUnit').value === 'mi' ? 'mi' : 'km'; setD($('#stLimit'), getD($('#stLimit')), 0, u); $('#stLimitLbl').textContent = tr('Replace shoes at ({0})', u); };
 $('#setForm').onsubmit = e => {
   e.preventDefault();
   const lim = getD($('#stLimit'));
+  S.lang = ['ko', 'zh'].includes($('#stLang').value) ? $('#stLang').value : 'en';
   S.unit = $('#stUnit').value === 'mi' ? 'mi' : 'km';
   if (lim > 0 && Math.abs(lim - S.limitKm) > 1e-6) {
     S.limitKm = lim;
     const others = active().filter(s => Math.abs(s.limitKm - lim) > 1e-6);
-    if (others.length && confirm(`New shoes will be replaced at ${fmtD(lim)} ${U()}.\n\nAlso change your ${others.length} current shoe${others.length === 1 ? '' : 's'} to ${fmtD(lim)} ${U()}?`)) others.forEach(s => s.limitKm = lim);
+    if (others.length && confirm(tr('New shoes will be replaced at {0} {1}.\n\nAlso change your ' + (others.length === 1 ? '1 current shoe' : '{2} current shoes') + ' to {0} {1}?', fmtD(lim), U(), others.length))) others.forEach(s => s.limitKm = lim);
   }
   S.calTheme = $('#stCal').value === 'contrast' ? 'contrast' : 'soft'; S.weekStart = $('#stWeek').value === '1' ? 1 : 0;
   S.calCell = $('#stCell').value === 'photo' ? 'photo' : 'block'; S.currency = $('#stCur').value.trim();
   save(); $('#setDlg').close(); render();
-  toast(S.calCell === 'photo' && !S.shoes.some(s => s.photo) ? 'Saved. Add a photo to a shoe to see it on the calendar.' : 'Settings saved');
+  toast(tr(S.calCell === 'photo' && !S.shoes.some(s => s.photo) ? 'Saved. Add a photo to a shoe to see it on the calendar.' : 'Settings saved'));
 };
 function download(name, data, type) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name;
@@ -1193,9 +1296,9 @@ $('#bkFile').onchange = async e => {
   try {
     const d = JSON.parse(await f.text());
     if (!Array.isArray(d.shoes) || !Array.isArray(d.runs)) throw 0;
-    if (!confirm(`Replace current data with this backup (${d.shoes.length} shoes, ${d.runs.length} runs)?`)) return;
-    localStorage.setItem(KEY, JSON.stringify(d)); S = load(); render(); $('#setDlg').close(); toast('Backup restored');
-  } catch { toast('That file is not a valid Shoe Tracker backup'); }
+    if (!confirm(tr('Replace current data with this backup ({0} shoes, {1} runs)?', d.shoes.length, d.runs.length))) return;
+    localStorage.setItem(KEY, JSON.stringify(d)); S = load(); render(); $('#setDlg').close(); toast(tr('Backup restored'));
+  } catch { toast(tr('That file is not a valid Shoe Tracker backup')); }
 };
 
 // ---------- wiring ----------
