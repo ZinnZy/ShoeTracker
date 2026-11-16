@@ -13,13 +13,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shoes">
 <style>
-:root{
+:root,dialog{
   --bg:#f6f7f8;--surface:#fff;--text:#16181d;--muted:#667085;--line:#e4e7ec;
   --accent:#0f766e;--accent-ink:#fff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;
   --warn-bg:#fff7e6;--bad-bg:#fdecec;--track:#eceef1;
   color-scheme:light dark;
 }
-@media (prefers-color-scheme:dark){:root{
+@media (prefers-color-scheme:dark){:root,dialog{
   --bg:#0f1115;--surface:#181b21;--text:#eef0f3;--muted:#98a2b3;--line:#2a2f38;
   --accent:#2dd4bf;--accent-ink:#06201d;--ok:#22c55e;--warn:#f59e0b;--bad:#f87171;
   --warn-bg:#2b2210;--bad-bg:#2e1616;--track:#262a32;
@@ -33,7 +33,7 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(12px + 
 h1{font-size:22px;margin:0}
 .icon-btn{border:0;background:none;color:var(--text);font-size:22px;padding:6px 10px;border-radius:10px;cursor:pointer}
 .tabs{display:flex;gap:4px;background:var(--track);padding:4px;border-radius:12px;margin-top:10px}
-.tabs button{flex:1;border:0;background:none;color:var(--muted);padding:8px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button{flex:1;min-width:0;border:0;background:none;color:var(--muted);padding:8px 4px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
 .tabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px #0002}
 .alerts{margin:12px 0 0;display:grid;gap:6px}
 .alert{background:var(--bad-bg);color:var(--bad);padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500}
@@ -91,14 +91,144 @@ input,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px
 .toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px);opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.hbtns{display:flex;align-items:center;gap:6px}
+.icon-btn svg,#calStyleBtn{display:none}
+.dot{flex:none;width:10px;height:10px;border-radius:99px;border:1px solid var(--line)}
+button.run{width:100%;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;min-height:44px}
+.daysum{font-size:14px;color:var(--muted);margin:-8px 0 12px}
+.daysum b{color:var(--text)}
+dialog .empty{padding:20px 8px}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--c);display:grid;place-items:center;cursor:pointer}
+.sw i{width:14px;height:14px;border-radius:99px;background:var(--d)}
+.sw[aria-checked=true]{outline:2px solid var(--text);outline-offset:2px}
+
+/* ---------- calendar: shared layout ---------- */
+@font-face{font-family:'Archivo Black';src:url(fonts/archivo-black-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Space Mono';src:url(fonts/space-mono-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+body.cal header{padding-top:calc(16px + env(safe-area-inset-top))}
+body.cal .hrow{height:44px}
+body.cal h1{font-size:20px}
+body.cal .icon-btn{width:44px;height:44px;padding:0;display:grid;place-items:center}
+body.cal .icon-btn span{display:none}
+body.cal .icon-btn svg{display:block}
+body.cal #calStyleBtn{display:flex;position:relative;width:44px;height:34px;padding:0;align-items:center;justify-content:center;gap:4px;cursor:pointer}
+body.cal #calStyleBtn::after,body.cal-soft .tabs button::after{content:'';position:absolute;inset:-5px 0}
+#calStyleBtn i{width:12px;height:12px}
+#calStyleBtn i:first-child{border-radius:99px;background:#E3A7B2}
+body.cal .tabs{margin-top:14px}
+body.cal .fab .btn{height:48px}
+.calv{display:flex;flex-direction:column;gap:14px;margin-top:6px;line-height:normal}
+.cal-head{display:flex;align-items:flex-end;justify-content:space-between;gap:4px}
+.cal-title{display:flex;align-items:baseline;gap:10px;min-width:0}
+.cal-title h2{margin:0;white-space:nowrap}
+.cal-title h2 button{border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+.cal-nav{display:flex;gap:8px;flex:none}
+.cal-nav button{width:44px;height:44px;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--text);background:var(--bg)}
+.cal-stats{display:flex;align-items:center}
+.cal-block{display:flex;flex-direction:column;gap:6px}
+.cal-wd,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-day{height:58px;min-width:0;margin:0;display:flex;flex-direction:column;justify-content:space-between;position:relative;font:inherit;cursor:pointer}
+.cal-legend{display:flex;flex-wrap:wrap}
+.cal-legend span{display:inline-flex;align-items:center;gap:6px}
+.cal-weeks h3{margin:0 0 6px}
+.cal-rows{display:grid;column-gap:10px;row-gap:2px;grid-auto-rows:22px;align-items:center}
+.cal-rows .l{white-space:nowrap}
+.cal-rows .t i{display:block;height:100%}
+.cal-rows .v{text-align:right;font-size:13px;font-weight:700}
+@media (prefers-reduced-motion:no-preference){.cal-grid.anim{animation:calIn .12s ease-out}}
+@keyframes calIn{from{opacity:0}}
+
+/* ---------- calendar: Soft ---------- */
+body.cal-soft{--bg:#fff;--surface:#fff;--text:#2B2522;--muted:#5E5550;--line:#E7E1DC;--accent:#4E6485;--accent-ink:#fff;--track:#F3EFEC;color-scheme:light}
+body.cal-soft :is(header,main,.fab) :focus-visible{outline:2px solid #2B2522;outline-offset:2px}
+body.cal-soft #calStyleBtn{border:1.5px solid var(--line);border-radius:99px;background:#fff}
+body.cal-soft #calStyleBtn i:first-child{box-shadow:0 0 0 2px #2B2522}
+body.cal-soft #calStyleBtn i:last-child{background:#111}
+body.cal-soft .tabs{gap:2px;border-radius:99px;background:#F6F3F1}
+body.cal-soft .tabs button{position:relative;height:36px;padding:0 4px;border-radius:99px;font-size:14px}
+body.cal-soft .tabs button.on{background:var(--text);color:#fff;box-shadow:none}
+.cal-soft .cal-head{margin-top:4px}
+.cal-soft .cal-title h2{font:italic 500 52px/.95 Georgia,'Times New Roman',serif;letter-spacing:-1.5px}
+.cal-soft .cal-year{font-size:17px;font-weight:600;color:var(--accent)}
+.cal-soft .cal-nav button{border:1.5px solid var(--line);border-radius:99px}
+.cal-soft .cal-stats{gap:8px;flex-wrap:wrap}
+.cal-soft .cal-stats span{height:36px;padding:0 14px;border-radius:99px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;border:1.5px solid var(--line)}
+.cal-soft .cal-stats .k{height:34px;border:0;background:var(--text);color:#fff}
+.cal-soft .cal-wd span{text-align:center;font-size:11px;font-weight:600;color:#6F6560}
+.cal-soft .cal-wd span:first-child{color:var(--accent)}
+.cal-soft .cal-day{border-radius:14px;padding:6px 0 7px;align-items:center;background:#fff;border:1px solid var(--line);color:#6F6560}
+.cal-soft .cal-day .n{height:20px;line-height:20px;font-size:11px;font-weight:600}
+.cal-soft .cal-day .km{font-size:14px;font-weight:700;letter-spacing:-.2px}
+.cal-soft .cal-day .more{position:absolute;top:5px;right:5px;font-size:9px;font-weight:700}
+.cal-soft .cal-day.fut{background:#FAF8F6;border:0}
+.cal-soft .cal-day.run{background:var(--c);border:0;color:var(--text)}
+.cal-soft .cal-day.today .n{width:20px;border-radius:99px;background:var(--accent);color:#fff;font-weight:700;text-align:center}
+.cal-soft .cal-legend{gap:6px 14px}
+.cal-soft .cal-legend span{font-size:12px;color:var(--muted)}
+.cal-soft .cal-legend i{width:10px;height:10px;border-radius:99px;background:var(--k)}
+.cal-soft .cal-legend b{color:var(--text)}
+.cal-soft .cal-weeks h3{font-size:13px;font-weight:700}
+.cal-soft .cal-rows{grid-template-columns:minmax(74px,auto) 1fr minmax(36px,auto)}
+.cal-soft .cal-rows .l{font-size:12px;color:var(--muted)}
+.cal-soft .cal-rows .t{height:10px;border-radius:99px;background:var(--track);overflow:hidden}
+.cal-soft .cal-rows .t i{border-radius:99px;background:#9FB6CF}
+body.cal-soft .fab .btn{padding:0 22px;border:1.5px solid var(--line);background:#fff;color:var(--text);box-shadow:0 6px 20px rgba(43,37,34,.12)}
+body.cal-soft .fab .btn.pri{border:0;background:var(--text);color:#fff;box-shadow:0 6px 20px rgba(43,37,34,.2)}
+
+/* ---------- calendar: Contrast ---------- */
+body.cal-contrast{--bg:#0A0A0A;--surface:#0A0A0A;--text:#fff;--muted:#A3A3A3;--line:#3A3A3A;--accent:#D4F23C;--accent-ink:#0A0A0A;--track:#1C1C1C;color-scheme:dark;
+  --disp:'Archivo Black','Arial Black',Impact,sans-serif;--mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace}
+body.cal-contrast :is(header,main,.fab) :focus-visible{outline:3px solid #D4F23C;outline-offset:3px}
+body.cal-contrast h1{font-family:var(--disp);font-weight:400;text-transform:uppercase;letter-spacing:.5px}
+body.cal-contrast #calStyleBtn{border:2px solid #fff;border-radius:0;background:#0A0A0A}
+body.cal-contrast #calStyleBtn i:last-child{background:#D4F23C;outline:2px solid #fff;outline-offset:1px}
+body.cal-contrast .tabs{gap:0;padding:0;border-radius:0;background:none;border:2px solid #fff}
+body.cal-contrast .tabs button{height:44px;padding:0;border-radius:0;font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.5px;color:#fff}
+body.cal-contrast .tabs button.on{background:var(--accent);color:#0A0A0A;box-shadow:none}
+body.cal-contrast .toast{border-radius:0}
+.cal-contrast .calv{font-family:var(--mono);font-weight:700}
+.cal-contrast .cal-head{margin-top:4px}
+.cal-contrast .cal-title{align-items:flex-end}
+.cal-contrast .cal-title h2{font:400 84px/.8 var(--disp);letter-spacing:-3px;text-transform:uppercase}
+.cal-contrast .cal-year{font-size:15px;color:var(--accent);padding-bottom:2px}
+.cal-contrast .cal-nav button{border:2px solid #fff;border-radius:0}
+.cal-contrast .cal-stats{border:2px solid #fff;align-items:stretch}
+.cal-contrast .cal-stats div{flex:1;min-width:0;padding:8px 10px;display:flex;flex-direction:column;gap:2px;border-left:2px solid #fff}
+.cal-contrast .cal-stats div:first-child{border-left:0;background:var(--accent);color:#0A0A0A}
+.cal-contrast .cal-stats small{font-size:10px;color:var(--muted)}
+.cal-contrast .cal-stats div:first-child small{color:inherit}
+.cal-contrast .cal-stats b{font:400 26px/1 var(--disp)}
+.cal-contrast .cal-wd span{font-size:10px;text-transform:uppercase;color:var(--muted)}
+.cal-contrast .cal-wd span:first-child{color:var(--accent)}
+.cal-contrast .cal-day{border-radius:0;padding:4px 5px 5px;align-items:stretch;text-align:left;font-family:var(--mono);font-weight:700;background:#0A0A0A;border:1px solid #3A3A3A;color:#A3A3A3}
+.cal-contrast .cal-day .top{display:flex;justify-content:space-between;align-items:baseline}
+.cal-contrast .cal-day .n{font-size:10px}
+.cal-contrast .cal-day .code,.cal-contrast .cal-day .more{font-size:9px}
+.cal-contrast .cal-day .km{font:400 14px/1 var(--disp);letter-spacing:-.4px}
+.cal-contrast .cal-day.fut{border:1px dashed #2A2A2A;color:#808080}
+.cal-contrast .cal-day.run{background:var(--c);color:var(--k);border:0}
+.cal-contrast .cal-day.today{outline:2px solid #fff;outline-offset:2px}
+.cal-contrast .cal-legend{gap:6px 12px}
+.cal-contrast .cal-legend span{font-size:11px;color:var(--muted);text-transform:uppercase}
+.cal-contrast .cal-legend i{min-width:22px;height:16px;padding:0 3px;background:var(--c);color:var(--k);font-size:9px;font-style:normal;display:inline-grid;place-items:center}
+.cal-contrast .cal-legend b{color:#fff}
+.cal-contrast .cal-weeks h3{font:400 14px var(--disp);text-transform:uppercase;letter-spacing:.5px}
+.cal-contrast .cal-rows{grid-template-columns:minmax(78px,auto) 1fr minmax(40px,auto)}
+.cal-contrast .cal-rows .l{font-size:11px;color:var(--muted);text-transform:uppercase}
+.cal-contrast .cal-rows .t{height:14px;background:var(--track)}
+.cal-contrast .cal-rows .t i{background:var(--accent)}
+body.cal-contrast .fab .btn{padding:0 20px;border:2px solid #fff;border-radius:0;background:#0A0A0A;color:#fff;font:700 14px var(--mono);text-transform:uppercase;box-shadow:none}
+body.cal-contrast .fab .btn.pri{border-color:var(--accent);background:var(--accent);color:#0A0A0A}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="hrow"><h1>Shoe Tracker</h1><button class="icon-btn" id="menuBtn" aria-label="Settings">⚙︎</button></div>
+    <div class="hrow"><h1>Shoe Tracker</h1><div class="hbtns"><button type="button" id="calStyleBtn"><i></i><i></i></button><button class="icon-btn" id="menuBtn" aria-label="Settings"><span>⚙︎</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button></div></div>
     <nav class="tabs">
       <button data-tab="shoes" class="on">Shoes</button>
+      <button data-tab="calendar">Calendar</button>
       <button data-tab="runs">Runs</button>
       <button data-tab="retired">Retired</button>
     </nav>
@@ -136,6 +266,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <button type="button" class="btn" id="sPhotoPick">Choose</button>
       <button type="button" class="btn" id="sPhotoDel">Remove</button>
     </div>
+    <label id="sColorLbl">Calendar color</label>
+    <div class="swatches" id="sColors" role="radiogroup" aria-labelledby="sColorLbl"></div>
     <label class="check"><input type="checkbox" id="sDefault"> Default shoe for new runs</label>
     <div class="actions">
       <button type="button" class="btn danger" id="sDelete">Delete</button>
@@ -167,6 +299,19 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </form>
 </dialog>
 
+<!-- Day dialog (calendar) -->
+<dialog id="dayDlg">
+  <form method="dialog">
+    <h2 id="dayTitle"></h2>
+    <div id="dayBody"></div>
+    <div class="actions">
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Close</button>
+      <button type="button" class="btn pri" id="dayAdd">+ Log run on this date</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Settings dialog -->
 <dialog id="setDlg">
   <form id="setForm" method="dialog">
@@ -174,6 +319,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div class="two">
       <div><label for="stAge">Age warning (months)</label><input id="stAge" type="number" min="1" step="1"></div>
       <div><label for="stCur">Currency symbol</label><input id="stCur" maxlength="4" placeholder="₩, $, €"></div>
+    </div>
+    <div class="two">
+      <div><label for="stCal">Calendar style</label><select id="stCal"><option value="soft">Soft</option><option value="contrast">Contrast</option></select></div>
+      <div><label for="stWeek">Week starts on</label><select id="stWeek"><option value="0">Sunday</option><option value="1">Monday</option></select></div>
     </div>
     <div class="actions"><span class="grow"></span><button class="btn pri" value="save">Save settings</button></div>
     <hr>
@@ -200,11 +349,73 @@ const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isF
 const fmtKm = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
 const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
+/* pure:start — calendar maths. Data in, data out: no DOM, no reads of S. tests.html loads this block. */
+const pad2 = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d || 1); };  // local, never new Date(str)
+const addDays = (s, n) => { const d = pd(s); d.setDate(d.getDate() + n); return iso(d); };
+const addMonths = (ym, n) => { const d = pd(ym); d.setMonth(d.getMonth() + n); return iso(d).slice(0, 7); };
+const weekOf = (s, weekStart) => addDays(s, -((pd(s).getDay() - weekStart + 7) % 7));
+function monthGrid(ym, weekStart) {
+  const [y, m] = ym.split('-').map(Number), n = new Date(y, m, 0).getDate();
+  const cells = Array((new Date(y, m - 1, 1).getDay() - weekStart + 7) % 7).fill(null);
+  for (let d = 1; d <= n; d++) cells.push(`${ym}-${pad2(d)}`);
+  while (cells.length % 7) cells.push(null);
+  return Array.from({ length: cells.length / 7 }, (_, i) => cells.slice(i * 7, i * 7 + 7));
+}
+function dayIndex(runs) {
+  const idx = new Map();
+  for (const r of runs) { if (!idx.has(r.date)) idx.set(r.date, { km: 0, runs: [], mainShoeId: null }); const d = idx.get(r.date); d.km += r.km; d.runs.push(r); }
+  for (const d of idx.values()) {
+    d.runs.sort((a, b) => (a.t || 0) - (b.t || 0));
+    const by = new Map();
+    for (const r of d.runs) { const e = by.get(r.shoeId) || { km: 0, t: 0 }; e.km += r.km; e.t = Math.max(e.t, r.t || 0); by.set(r.shoeId, e); }
+    d.mainShoeId = [...by].sort((a, b) => b[1].km - a[1].km || b[1].t - a[1].t)[0][0];
+  }
+  return idx;
+}
+function monthSummary(runs, ym) {
+  const out = { km: 0, count: 0, longest: 0, byShoe: [] }, by = new Map();
+  for (const r of runs) if (r.date.slice(0, 7) === ym) {
+    out.km += r.km; out.count++; out.longest = Math.max(out.longest, r.km);
+    if (!by.has(r.shoeId)) by.set(r.shoeId, { shoeId: r.shoeId, km: 0, count: 0 });
+    const e = by.get(r.shoeId); e.km += r.km; e.count++;
+  }
+  out.byShoe = [...by.values()].sort((a, b) => b.km - a.km);
+  return out;
+}
+function weekTotals(runs, ym, weekStart) {
+  return monthGrid(ym, weekStart).map(w => {
+    const i = w.findIndex(Boolean), from = addDays(w[i], -i), to = addDays(from, 6);
+    return { from, to, km: runs.reduce((a, r) => r.date >= from && r.date <= to ? a + r.km : a, 0) };
+  });
+}
+function weekStreak(runs, todayStr, weekStart) {
+  const weeks = new Set(runs.map(r => weekOf(r.date, weekStart)));
+  let cur = weekOf(todayStr, weekStart), n = 0;
+  if (!weeks.has(cur)) cur = addDays(cur, -7);
+  while (weeks.has(cur)) { n++; cur = addDays(cur, -7); }
+  return n;
+}
+const validColor = v => Number.isInteger(v) && v >= 0 && v < 6;
+function freeColor(shoes, pos, self) {
+  const used = new Set(shoes.filter(s => s !== self && !s.retired && validColor(s.colorIdx)).map(s => s.colorIdx));
+  for (let i = 0; i < 6; i++) if (!used.has(i)) return i;
+  return pos % 6;
+}
+function assignColors(shoes) { shoes.forEach((s, i) => { if (!validColor(s.colorIdx)) s.colorIdx = freeColor(shoes, i, s); }); return shoes; }
+/* pure:end */
+
 // ---------- state ----------
 function load() {
-  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null };
-  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.shoes)) return { ...base, ...d }; } catch (e) {}
-  return base;
+  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0 };
+  let d = base;
+  try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.shoes)) d = { ...base, ...p }; } catch (e) {}
+  // additive migration: fresh state, old state and restored backups all pass through here
+  if (d.calTheme !== 'contrast') d.calTheme = 'soft';
+  d.weekStart = d.weekStart === 1 ? 1 : 0;
+  assignColors(d.shoes);
+  return d;
 }
 let S = load();
 function save() {
@@ -212,6 +423,7 @@ function save() {
   catch (e) { alert('Could not save — storage is full. Remove some shoe photos or export a backup.'); }
 }
 let tab = 'shoes';
+let calMonth = today().slice(0, 7), calSel = null, calAnim = false;
 
 // ---------- stats ----------
 function stats(sh) {
@@ -296,9 +508,95 @@ function viewRuns() {
   return html;
 }
 
+// ---------- calendar ----------
+// Shoe palette by colorIdx. soft: [cell fill, dot]; contrast: [fill, text on it].
+const CAL_PAL = {
+  soft: [['#DCE6F0', '#9FB6CF'], ['#E9E2F2', '#BCA9D6'], ['#F6E0E4', '#E3A7B2'], ['#E1E8DC', '#A9BC9D'], ['#F4E6D8', '#D9B38C'], ['#EDEBE8', '#9C9A98']],
+  contrast: [['#D4F23C', '#0A0A0A'], ['#FFFFFF', '#0A0A0A'], ['#FF6B98', '#0A0A0A'], ['#2D46F5', '#FFFFFF'], ['#FF9F1C', '#0A0A0A'], ['#3DDCFF', '#0A0A0A']],
+};
+const CAL_NAMES = { soft: ['Blue', 'Lilac', 'Rose', 'Sage', 'Sand', 'Grey'], contrast: ['Volt', 'White', 'Pink', 'Blue', 'Orange', 'Cyan'] };
+const THEME_COLOR = $('meta[name=theme-color]').content;
+const calPal = idx => CAL_PAL[S.calTheme][validColor(idx) ? idx : 0];
+const calVars = idx => { const [c, k] = calPal(idx); return `--c:${c};--k:${k}`; };
+const calDot = idx => calPal(idx)[S.calTheme === 'soft' ? 1 : 0];
+const calShoe = id => { const sh = shoeById(id); return sh ? { name: sh.name, type: sh.type || '', idx: sh.colorIdx, code: initials(sh.name) } : { name: '(deleted shoe)', type: '', idx: 0, code: '?' }; };
+const km1 = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const loc = (d, o) => d.toLocaleDateString(undefined, o);
+const CHEV = d => `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"></path></svg>`;
+
+function viewCalendar() {
+  if (!S.shoes.length) return viewShoes();
+  const soft = S.calTheme === 'soft', ws = S.weekStart, td = today(), first = pd(calMonth);
+  const days = dayIndex(S.runs), sum = monthSummary(S.runs, calMonth), weeks = weekTotals(S.runs, calMonth, ws), streak = weekStreak(S.runs, td, ws);
+  const focusDay = calSel && calSel.startsWith(calMonth) ? calSel : td.startsWith(calMonth) ? td : calMonth + '-01';
+  const head = `<div class="cal-head"><div class="cal-title"><h2><button type="button" data-cal="today" aria-label="${esc(loc(first, { month: 'long', year: 'numeric' }))}. Go to current month">${esc(loc(first, { month: soft ? 'long' : 'short' }))}</button></h2><span class="cal-year">${first.getFullYear()}</span></div>
+    <div class="cal-nav"><button type="button" data-cal="prev" aria-label="Previous month">${CHEV('M15 5l-7 7 7 7')}</button><button type="button" data-cal="next" aria-label="Next month">${CHEV('M9 5l7 7-7 7')}</button></div></div>`;
+  const runsLbl = sum.count === 1 ? 'run' : 'runs';
+  const stats = soft
+    ? `<div class="cal-stats"><span class="k">${km1(sum.km)} km</span><span>${sum.count} ${runsLbl}</span>${streak >= 2 ? `<span>${streak}-week streak</span>` : ''}</div>`
+    : `<div class="cal-stats"><div><small>KM</small><b>${km1(sum.km)}</b></div><div><small>${runsLbl.toUpperCase()}</small><b>${sum.count}</b></div>${streak >= 2 ? `<div><small>STREAK WK</small><b>${streak}</b></div>` : ''}</div>`;
+  const wd = `<div class="cal-wd" aria-hidden="true">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span>${esc(loc(new Date(2023, 0, 1 + ws + i), { weekday: 'short' }))}</span>`).join('')}</div>`;
+  const cell = date => {
+    if (!date) return '<span></span>';
+    const d = days.get(date), n = +date.slice(8), isToday = date === td, cls = ['cal-day'];
+    let label = loc(pd(date), { weekday: 'long', month: 'long', day: 'numeric' }), style = '', km = '', code = '', more = '';
+    if (d) {
+      const sh = calShoe(d.mainShoeId);
+      cls.push('run'); style = ` style="${calVars(sh.idx)}"`;
+      km = `<span class="km">${d.km >= 100 ? Math.round(d.km) : km1(d.km)}</span>`; code = `<span class="code">${esc(sh.code)}</span>`;
+      if (d.runs.length > 1) more = `<span class="more">+${d.runs.length - 1}</span>`;
+      label += `: ${km1(d.km)} km, ${[...new Set(d.runs.map(r => calShoe(r.shoeId).name))].join(', ')}${d.runs.length > 1 ? `, ${d.runs.length} runs` : ''}`;
+    } else if (date > td) cls.push('fut');
+    if (isToday) cls.push('today');
+    const inner = soft ? `<span class="n">${n}</span>${more}${km || '<span></span>'}` : `<span class="top"><span class="n">${pad2(n)}</span>${more || code}</span>${km || '<span></span>'}`;
+    return `<button type="button" class="${cls.join(' ')}" data-day="${date}" tabindex="${date === focusDay ? 0 : -1}" aria-label="${esc(label)}"${isToday ? ' aria-current="date"' : ''}${style}>${inner}</button>`;
+  };
+  const grid = `<div class="cal-grid${calAnim ? ' anim' : ''}">${monthGrid(calMonth, ws).flat().map(cell).join('')}</div>`;
+  const legend = sum.byShoe.length ? `<div class="cal-legend">${sum.byShoe.map(e => { const sh = calShoe(e.shoeId); return `<span><i style="${calVars(sh.idx)}">${soft ? '' : esc(sh.code)}</i>${esc(sh.name)} <b>${km1(e.km)}</b></span>`; }).join('')}</div>` : '';
+  const max = Math.max(...weeks.map(w => w.km));
+  const md = d => loc(d, { month: 'short', day: 'numeric' }), dd = d => loc(d, { day: 'numeric' });
+  const rows = weeks.map((w, i) => {
+    const f = pd(w.from), t = pd(w.to), newMonth = i === 0 || f.getMonth() !== pd(weeks[i - 1].to).getMonth();
+    return `<span class="l">${esc((newMonth ? md(f) : dd(f)) + '–' + (t.getMonth() !== f.getMonth() ? md(t) : dd(t)))}</span><span class="t">${w.km > 0 ? `<i style="width:${Math.round(w.km / max * 100)}%"></i>` : ''}</span><span class="v">${w.km > 0 ? km1(w.km) : soft ? '–' : '--'}</span>`;
+  }).join('');
+  return `<div class="calv">${head}${stats}<div class="cal-block">${wd}${grid}</div>${legend}<section class="cal-weeks"><h3>Weekly km</h3><div class="cal-rows">${rows}</div></section></div>`;
+}
+
+// Long month names ("September") or narrow screens: shrink the month name until the header row fits.
+function fitMonth() {
+  const t = $('.cal-title'), h = t && t.querySelector('h2'); if (!h) return;
+  h.style.fontSize = '';
+  for (let i = 0; i < 4 && t.scrollWidth > t.clientWidth; i++) h.style.fontSize = Math.floor(parseFloat(getComputedStyle(h).fontSize) * t.clientWidth / t.scrollWidth) + 'px';
+}
+addEventListener('resize', fitMonth);
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitMonth);
+
+let dayDate = null;
+function openDay(date) {
+  dayDate = calSel = date;
+  const d = dayIndex(S.runs).get(date);
+  $('#dayTitle').textContent = loc(pd(date), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  $('#dayBody').innerHTML = d
+    ? `<div class="daysum"><b>${km1(d.km)} km</b> total</div><div class="runs">${d.runs.map(r => { const sh = calShoe(r.shoeId); return `<button type="button" class="run" data-run="${r.id}"><i class="dot" style="background:${calDot(sh.idx)}"></i><span class="s">${esc(sh.name)}</span>${sh.type ? `<span class="tag">${esc(sh.type)}</span>` : ''}<span class="k">${km1(r.km)} km</span></button>`; }).join('')}</div>`
+    : '<div class="empty">No run logged on this day.</div>';
+  $('#dayDlg').showModal();
+}
+$('#dayBody').onclick = e => { const r = e.target.closest('[data-run]'); if (r) { $('#dayDlg').close(); openRun(r.dataset.run); } };
+$('#dayAdd').onclick = () => { $('#dayDlg').close(); openRun(null, dayDate); };
+$('#calStyleBtn').onclick = () => { S.calTheme = S.calTheme === 'soft' ? 'contrast' : 'soft'; save(); render(); };
+
 function render() {
+  const cal = tab === 'calendar', soft = S.calTheme === 'soft', hadDay = cal && document.activeElement && document.activeElement.matches('.cal-day');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  $('#view').innerHTML = tab === 'shoes' ? viewShoes() : tab === 'runs' ? viewRuns() : viewRetired();
+  document.body.classList.toggle('cal', cal);
+  document.body.classList.toggle('cal-soft', cal && soft);
+  document.body.classList.toggle('cal-contrast', cal && !soft);
+  $('meta[name=theme-color]').content = !cal ? THEME_COLOR : soft ? '#FFFFFF' : '#0A0A0A';
+  $('#calStyleBtn').setAttribute('aria-label', `Calendar style: ${soft ? 'Soft' : 'Contrast'}. Switch to ${soft ? 'Contrast' : 'Soft'}`);
+  $('#view').innerHTML = tab === 'shoes' ? viewShoes() : tab === 'calendar' ? viewCalendar() : tab === 'runs' ? viewRuns() : viewRetired();
+  calAnim = false;
+  fitMonth();
+  if (hadDay) { const c = $('.cal-day[tabindex="0"]'); if (c) c.focus(); }
 }
 
 // ---------- toast ----------
@@ -306,7 +604,11 @@ let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3500); }
 
 // ---------- shoe dialog ----------
-let editShoe = null, pendingPhoto = null;
+let editShoe = null, pendingPhoto = null, pendingColor = 0;
+function setColors() {
+  $('#sColors').innerHTML = CAL_PAL[S.calTheme].map(([c], i) => `<button type="button" class="sw" role="radio" aria-checked="${i === pendingColor}" aria-label="${CAL_NAMES[S.calTheme][i]}" data-color="${i}" style="--c:${c};--d:${calDot(i)}"><i></i></button>`).join('');
+}
+$('#sColors').onclick = e => { const b = e.target.closest('[data-color]'); if (b) { pendingColor = +b.dataset.color; setColors(); $(`#sColors [data-color="${pendingColor}"]`).focus(); } };
 $('#sType').innerHTML = TYPES.map(t => `<option>${t}</option>`).join('');
 function setPhotoPrev() {
   $('#sPhotoPrev').innerHTML = pendingPhoto ? `<img src="${esc(pendingPhoto)}" alt="">` : '👟';
@@ -321,6 +623,7 @@ function openShoe(id) {
   $('#curLbl').textContent = S.currency ? `(${S.currency})` : '';
   $('#sDefault').checked = editShoe ? S.defaultShoeId === sh.id : active().length === 0;
   pendingPhoto = sh.photo || null; setPhotoPrev();
+  pendingColor = editShoe ? sh.colorIdx : freeColor(S.shoes, S.shoes.length); setColors();
   $('#sDelete').hidden = !editShoe; $('#sRetire').hidden = !editShoe;
   $('#sRetire').textContent = editShoe && editShoe.retired ? 'Un-retire' : 'Retire';
   $('#shoeDlg').showModal();
@@ -349,7 +652,7 @@ $('#shoeForm').onsubmit = e => {
   const data = {
     name: $('#sName').value.trim(), type: $('#sType').value, start: $('#sStart').value,
     startKm: Math.max(0, num($('#sStartKm').value)), limitKm: Math.max(1, num($('#sLimit').value)),
-    price: Math.max(0, num($('#sPrice').value)) || null, photo: pendingPhoto,
+    price: Math.max(0, num($('#sPrice').value)) || null, photo: pendingPhoto, colorIdx: pendingColor,
   };
   if (!data.name) return;
   let sh = editShoe;
@@ -378,7 +681,7 @@ $('#sDelete').onclick = () => {
 
 // ---------- run dialog ----------
 let editRun = null;
-function openRun(id) {
+function openRun(id, date) {
   editRun = id ? S.runs.find(r => r.id === id) : null;
   const shoes = active();
   if (editRun && !shoes.some(s => s.id === editRun.shoeId)) { const sh = shoeById(editRun.shoeId); if (sh) shoes.push(sh); }
@@ -386,7 +689,7 @@ function openRun(id) {
   $('#rShoe').innerHTML = shoes.map(s => `<option value="${s.id}">${esc(s.name)}${s.retired ? ' (retired)' : ''}</option>`).join('');
   const lastShoe = [...S.runs].sort((a, b) => (b.t || 0) - (a.t || 0)).find(r => shoes.some(s => s.id === r.shoeId && !s.retired));
   $('#rShoe').value = editRun ? editRun.shoeId : (shoes.some(s => s.id === S.defaultShoeId) ? S.defaultShoeId : lastShoe ? lastShoe.shoeId : shoes[0].id);
-  $('#rKm').value = editRun ? editRun.km : ''; $('#rDate').value = editRun ? editRun.date : today();
+  $('#rKm').value = editRun ? editRun.km : ''; $('#rDate').value = editRun ? editRun.date : date || today();
   $('#runTitle').textContent = editRun ? 'Edit run' : 'Log run';
   $('#rDelete').hidden = !editRun;
   // quick-pick chips from recent distances
@@ -415,13 +718,14 @@ $('#rDelete').onclick = () => {
 
 // ---------- settings / backup ----------
 function openSettings() {
-  $('#stAge').value = S.ageMonths; $('#stCur').value = S.currency;
+  $('#stAge').value = S.ageMonths; $('#stCur').value = S.currency; $('#stCal').value = S.calTheme; $('#stWeek').value = S.weekStart;
   $('#bkInfo').textContent = `${S.shoes.length} shoes, ${S.runs.length} runs. ` + (S.lastBackup ? `Last backup: ${fmtDate(S.lastBackup)}.` : 'Never backed up — do it once in a while, since clearing browser data erases everything.');
   $('#setDlg').showModal();
 }
 $('#setForm').onsubmit = e => {
   e.preventDefault();
   S.ageMonths = Math.max(1, Math.round(num($('#stAge').value)) || 12); S.currency = $('#stCur').value.trim();
+  S.calTheme = $('#stCal').value === 'contrast' ? 'contrast' : 'soft'; S.weekStart = $('#stWeek').value === '1' ? 1 : 0;
   save(); $('#setDlg').close(); render(); toast('Settings saved');
 };
 function download(name, text, type) {
@@ -459,8 +763,21 @@ $('#menuBtn').onclick = openSettings;
 $('#view').onclick = e => {
   const c = e.target.closest('[data-shoe]'); if (c) return openShoe(c.dataset.shoe);
   const r = e.target.closest('[data-run]'); if (r) return openRun(r.dataset.run);
-  if (e.target.closest('[data-act="addShoe"]')) openShoe();
+  if (e.target.closest('[data-act="addShoe"]')) return openShoe();
+  const d = e.target.closest('[data-day]'); if (d) return openDay(d.dataset.day);
+  const m = e.target.closest('[data-cal]');
+  if (m) {
+    const a = m.dataset.cal, to = a === 'today' ? today().slice(0, 7) : addMonths(calMonth, a === 'prev' ? -1 : 1);
+    calAnim = to !== calMonth; calMonth = to; calSel = null; render(); $(`[data-cal="${a}"]`).focus();
+  }
 };
+$('#view').addEventListener('keydown', e => {
+  const c = e.target.closest('.cal-day'), step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+  if (!c || !step) return;
+  e.preventDefault();
+  const n = $(`.cal-day[data-day="${addDays(c.dataset.day, step)}"]`); if (!n) return;
+  c.tabIndex = -1; n.tabIndex = 0; n.focus(); calSel = n.dataset.day;
+});
 
 render();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});

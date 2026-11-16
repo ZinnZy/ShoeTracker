@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shoe Tracker tests</title>
+<style>
+body{font:14px/1.5 system-ui,sans-serif;margin:24px;max-width:760px}
+h1{font-size:18px}
+li.ok{color:#15803d}li.bad{color:#b91c1c;font-weight:600}
+#sum{font-weight:700;margin:12px 0}
+</style>
+</head>
+<body>
+<h1>Shoe Tracker: calendar maths</h1>
+<div id="sum">Running…</div>
+<ul id="out"></ul>
+<script>
+// Plain assertions on the pure functions in index.html (the block between "pure:start" and "pure:end").
+// Open over http (python -m http.server), not file://.
+(async () => {
+  const out = document.getElementById('out'), sum = document.getElementById('sum');
+  let pass = 0, fail = 0;
+  const line = (ok, msg) => { const li = document.createElement('li'); li.className = ok ? 'ok' : 'bad'; li.textContent = (ok ? '✓ ' : '✗ ') + msg; out.appendChild(li); ok ? pass++ : fail++; };
+  const eq = (a, b, msg) => { const x = JSON.stringify(a), y = JSON.stringify(b); line(x === y, x === y ? msg : `${msg}: got ${x}, expected ${y}`); };
+  const near = (a, b, msg) => line(Math.abs(a - b) < 1e-9, Math.abs(a - b) < 1e-9 ? msg : `${msg}: got ${a}, expected ${b}`);
+  try {
+    const src = await (await fetch('index.html', { cache: 'no-store' })).text();
+    const m = src.match(/\/\* pure:start[\s\S]*?\/\* pure:end \*\//);
+    if (!m) throw new Error('pure block not found in index.html');
+    const P = new Function(m[0] + '\nreturn { monthGrid, dayIndex, monthSummary, weekTotals, weekStreak, freeColor, assignColors, addDays, addMonths, weekOf };')();
+
+    // ---- check data: November 2026 (starts on a Sunday), today = 2026-11-16 ----
+    const data = [[1, 16.0, 'nb'], [3, 6.2, 'pg'], [5, 8.0, 'pg'], [7, 5.0, 'sg'], [8, 18.5, 'nb'], [10, 6.0, 'pg'], [11, 10.0, 'vf'], [13, 5.2, 'pg'], [14, 12.0, 'sg'], [15, 21.1, 'vf'], [16, 4.0, 'pg']];
+    const runs = data.map(([d, km, shoeId], i) => ({ id: 'r' + i, shoeId, km, date: `2026-11-${String(d).padStart(2, '0')}`, t: 1000 + i }));
+    const kms = ws => P.weekTotals(runs, '2026-11', ws).map(w => Math.round(w.km * 10) / 10);
+
+    const g = P.monthGrid('2026-11', 0);
+    eq(g.length, 5, 'Nov 2026, Sunday start: 5 weeks');
+    eq(g[0], ['2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07'], 'first week is Nov 1–7');
+    eq(g[4], ['2026-11-29', '2026-11-30', null, null, null, null, null], 'last week is 29, 30, then empty cells');
+    eq(g.flat().filter(Boolean).length, 30, '30 day cells');
+
+    const s = P.monthSummary(runs, '2026-11');
+    near(s.km, 112.0, 'month total 112.0 km');
+    eq(s.count, 11, '11 runs');
+    eq(s.longest, 21.1, 'longest run 21.1');
+    eq(s.byShoe.map(e => [e.shoeId, Math.round(e.km * 10) / 10, e.count]), [['nb', 34.5, 2], ['vf', 31.1, 2], ['pg', 29.4, 5], ['sg', 17, 2]], 'by shoe: Novablast 34.5, Vaporfly 31.1, Pegasus 29.4, Speedgoat 17.0');
+    eq(P.monthSummary(runs, '2026-10'), { km: 0, count: 0, longest: 0, byShoe: [] }, 'empty month gives zeros');
+
+    eq(kms(0), [35.2, 51.7, 25.1, 0, 0], 'weeks (Sunday start): 35.2, 51.7, 25.1, 0, 0');
+    const w0 = P.weekTotals(runs, '2026-11', 0);
+    eq([w0[0].from, w0[0].to, w0[4].from, w0[4].to], ['2026-11-01', '2026-11-07', '2026-11-29', '2026-12-05'], 'week ranges are full 7-day weeks');
+    eq(P.weekStreak(runs, '2026-11-16', 0), 3, 'streak is 3 with only the check data');
+
+    const di = P.dayIndex(runs);
+    eq(di.size, 11, 'dayIndex has 11 days');
+    eq([di.get('2026-11-15').km, di.get('2026-11-15').mainShoeId, di.get('2026-11-15').runs.length], [21.1, 'vf', 1], 'Nov 15: 21.1 km, Vaporfly');
+    eq(di.get('2026-11-02'), undefined, 'no entry for a day without a run');
+
+    // ---- a month starting mid-week ----
+    const j = P.monthGrid('2026-07', 0);  // July 1, 2026 is a Wednesday
+    eq(j[0], [null, null, null, '2026-07-01', '2026-07-02', '2026-07-03', '2026-07-04'], 'July 2026 starts on Wednesday (3 leading empty cells)');
+    eq([j.length, j[4][5], j[4][6]], [5, '2026-07-31', null], 'July 2026: 5 weeks, ends Friday 31');
+    eq(P.monthGrid('2026-08', 0).length, 6, 'August 2026 (starts Saturday) needs 6 weeks');
+    eq(P.monthGrid('2026-02', 0).flat().filter(Boolean).length, 28, 'February 2026 has 28 days');
+    eq(P.monthGrid('2028-02', 0).flat().filter(Boolean).length, 29, 'February 2028 has 29 days');
+
+    // ---- Monday week start ----
+    const gm = P.monthGrid('2026-11', 1);
+    eq([gm.length, gm[0][6], gm[0][5], gm[1][0]], [6, '2026-11-01', null, '2026-11-02'], 'Monday start: Nov 1 (Sunday) is the last column of row 1');
+    eq(kms(1), [16, 37.7, 54.3, 4, 0, 0], 'weeks (Monday start): 16.0, 37.7, 54.3, 4.0, 0, 0');
+    eq(P.weekTotals(runs, '2026-11', 1)[0].from, '2026-10-26', 'Monday start: first week begins Oct 26');
+    eq(P.weekStreak(runs, '2026-11-16', 1), 4, 'Monday start: streak is 4');
+    eq([P.weekOf('2026-11-16', 0), P.weekOf('2026-11-16', 1), P.weekOf('2026-11-15', 1)], ['2026-11-15', '2026-11-16', '2026-11-09'], 'weekOf for both week starts');
+
+    // ---- two runs on one day ----
+    const two = [...runs, { id: 'x', shoeId: 'sg', km: 6.0, date: '2026-11-16', t: 5000 }];
+    const d16 = P.dayIndex(two).get('2026-11-16');
+    eq([d16.km, d16.runs.length, d16.mainShoeId], [10, 2, 'sg'], 'two runs: km summed, main shoe is the one with more km');
+    eq(P.monthSummary(two, '2026-11').count, 12, 'count is runs, not days');
+    const tie = [{ id: 'a', shoeId: 'pg', km: 5, date: '2026-11-20', t: 10 }, { id: 'b', shoeId: 'vf', km: 5, date: '2026-11-20', t: 20 }];
+    eq(P.dayIndex(tie).get('2026-11-20').mainShoeId, 'vf', 'tie on km: most recently logged run wins');
+    eq(P.dayIndex([...tie].reverse()).get('2026-11-20').mainShoeId, 'vf', 'tie-break does not depend on array order');
+    eq(P.dayIndex([{ id: 'a', shoeId: 'pg', km: 4, date: '2026-11-20', t: 1 }, { id: 'b', shoeId: 'vf', km: 6, date: '2026-11-20', t: 2 }, { id: 'c', shoeId: 'pg', km: 4, date: '2026-11-20', t: 3 }]).get('2026-11-20').mainShoeId, 'pg', 'main shoe is by total km that day, not by single run');
+
+    // ---- a week spanning two months ----
+    const span = [...runs, { id: 'd', shoeId: 'pg', km: 3.0, date: '2026-12-02', t: 6000 }];
+    eq(Math.round(P.weekTotals(span, '2026-11', 0)[4].km * 10) / 10, 3, 'Nov grid, last week (Nov 29–Dec 5) includes the Dec 2 run');
+    near(P.monthSummary(span, '2026-11').km, 112.0, '…but the November total is still 112.0');
+    const dec = P.weekTotals(span, '2026-12', 0);
+    eq([dec[0].from, dec[0].to, dec[0].km], ['2026-11-29', '2026-12-05', 3], 'Dec grid, first week starts Nov 29');
+    eq(P.weekTotals(runs, '2027-01', 0)[0].from, '2026-12-27', 'a week can span two years');
+
+    // ---- streak ----
+    eq(P.weekStreak(runs, '2026-11-23', 0), 3, 'empty current week: counts back from last week');
+    eq(P.weekStreak(runs, '2026-11-30', 0), 0, 'two empty weeks in a row: 0');
+    eq(P.weekStreak([], '2026-11-16', 0), 0, 'no runs: 0');
+    eq(P.weekStreak(runs.filter(r => r.date < '2026-11-08' || r.date > '2026-11-14'), '2026-11-16', 0), 1, 'a gap week breaks the streak');
+    eq(P.weekStreak([...runs, { id: 'f', shoeId: 'pg', km: 5, date: '2026-11-25', t: 1 }], '2026-11-16', 0), 3, 'a run logged in a future week does not change the streak');
+
+    // ---- a run whose shoe is missing must not throw ----
+    const ghost = [{ id: 'g', shoeId: 'gone', km: 7, date: '2026-11-04', t: 1 }];
+    eq([P.dayIndex(ghost).get('2026-11-04').mainShoeId, P.monthSummary(ghost, '2026-11').byShoe[0].shoeId], ['gone', 'gone'], 'missing shoe: maths still works');
+
+    // ---- shoe colors (migration) ----
+    eq(P.assignColors([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }]).map(x => x.colorIdx), [0, 1, 2, 3], 'old shoes get 0, 1, 2, 3 in order');
+    eq(P.assignColors([{ id: 'a', colorIdx: 1 }, { id: 'b' }, { id: 'c', colorIdx: 0 }, { id: 'd' }]).map(x => x.colorIdx), [1, 2, 0, 3], 'existing colors are kept; new ones take the lowest free index');
+    eq(P.assignColors([{ id: 'a', colorIdx: 0, retired: '2026-01-01' }, { id: 'b' }]).map(x => x.colorIdx), [0, 0], 'a retired shoe does not reserve its color');
+    eq(P.assignColors([0, 1, 2, 3, 4, 5].map(i => ({ colorIdx: i })).concat([{ id: 'g' }, { id: 'h' }])).slice(6).map(x => x.colorIdx), [0, 1], 'all six in use: falls back to position % 6');
+    eq(P.assignColors([{ colorIdx: 9 }, { colorIdx: '2' }, { colorIdx: -1 }, { colorIdx: 1.5 }]).map(x => x.colorIdx), [0, 1, 2, 3], 'invalid colorIdx values are replaced');
+    eq(P.freeColor([{ colorIdx: 0 }, { colorIdx: 1 }], 2), 2, 'a new shoe gets the next free color');
+
+    // ---- date helpers ----
+    eq([P.addDays('2026-03-01', -1), P.addDays('2028-02-28', 1), P.addDays('2026-12-31', 1)], ['2026-02-28', '2028-02-29', '2027-01-01'], 'addDays across month, leap day and year');
+    eq([P.addMonths('2026-01', -1), P.addMonths('2026-12', 1), P.addMonths('2026-11', 0)], ['2025-12', '2027-01', '2026-11'], 'addMonths across years');
+  } catch (e) { line(false, 'threw: ' + (e && e.message || e)); }
+  sum.textContent = fail ? `${fail} FAILED, ${pass} passed` : `All ${pass} passed`;
+  sum.style.color = fail ? '#b91c1c' : '#15803d';
+  document.title = (fail ? 'FAIL ' : 'PASS ') + document.title;
+  window.testResult = { pass, fail };
+})();
+</script>
+</body>
+</html>
