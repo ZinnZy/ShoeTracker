@@ -386,7 +386,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   <form id="setForm" method="dialog">
     <h2 data-t="Settings"></h2>
     <label for="stLang" data-t="Language"></label>
-    <select id="stLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文 (简体)</option></select>
+    <select id="stLang"><option value="auto" data-t="Automatic (device language)"></option><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文 (简体)</option></select>
     <div class="two">
       <div><label for="stUnit" data-t="Distance unit"></label><select id="stUnit"><option value="km" data-t="Kilometres (km)"></option><option value="mi" data-t="Miles (mi)"></option></select></div>
       <div><label for="stLimit" id="stLimitLbl"></label><input id="stLimit" type="number" inputmode="decimal" min="1" step="any"></div>
@@ -486,7 +486,7 @@ const kmFrom = (v, unit) => unit === 'mi' ? v * KM_PER_MI : v;
 
 // ---------- state ----------
 function load() {
-  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0, unit: 'km', limitKm: 700, calCell: 'block', lang: 'en' };
+  const base = { shoes: [], runs: [], defaultShoeId: null, ageMonths: 12, currency: '', lastBackup: null, calTheme: 'soft', weekStart: 0, unit: 'km', limitKm: 700, calCell: 'block', lang: 'auto' };
   let d = base;
   try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.shoes)) d = { ...base, ...p }; } catch (e) {}
   // additive migration: fresh state, old state and restored backups all pass through here
@@ -495,7 +495,10 @@ function load() {
   d.unit = d.unit === 'mi' ? 'mi' : 'km';
   d.limitKm = d.limitKm > 0 ? +d.limitKm : 700;
   d.calCell = d.calCell === 'photo' ? 'photo' : 'block';
-  d.lang = d.lang === 'ko' || d.lang === 'zh' ? d.lang : 'en';
+  // lang: 'auto' follows the device; 'en' / 'ko' / 'zh' is a choice made in Settings.
+  // Before langV 2, 'en' was only the default, so it becomes 'auto' once; a Korean or Chinese choice is kept.
+  if (d.langV !== 2) { if (d.lang !== 'ko' && d.lang !== 'zh') d.lang = 'auto'; d.langV = 2; }
+  if (!['auto', 'en', 'ko', 'zh'].includes(d.lang)) d.lang = 'auto';
   assignColors(d.shoes);
   return d;
 }
@@ -529,7 +532,7 @@ const I18N = {
   'Save image': ['이미지 저장', '保存图片'], 'Share': ['공유', '分享'],
   'Cut out the shoe': ['신발 누끼 따기', '抠出跑鞋'], 'Your photo. Tap the shoe to cut it out.': ['내 사진. 신발을 누르면 누끼를 따요.', '你的照片。点按跑鞋即可抠图。'],
   'Start over': ['다시 하기', '重新开始'], 'Use it': ['사용하기', '使用'],
-  'Language': ['언어', '语言'], 'Distance unit': ['거리 단위', '距离单位'], 'Kilometres (km)': ['킬로미터 (km)', '公里 (km)'], 'Miles (mi)': ['마일 (mi)', '英里 (mi)'],
+  'Language': ['언어', '语言'], 'Automatic (device language)': ['자동 (기기 언어)', '自动(设备语言)'], 'Distance unit': ['거리 단위', '距离单位'], 'Kilometres (km)': ['킬로미터 (km)', '公里 (km)'], 'Miles (mi)': ['마일 (mi)', '英里 (mi)'],
   'Replace shoes at ({0})': ['신발 교체 기준 ({0})', '跑鞋更换里程 ({0})'],
   'Style': ['스타일', '风格'], 'Soft': ['소프트', '柔和'], 'Contrast': ['콘트라스트', '高对比'],
   'Week starts on': ['한 주의 시작', '每周开始于'], 'Sunday': ['일요일', '星期日'], 'Monday': ['월요일', '星期一'],
@@ -590,16 +593,22 @@ const I18N = {
   'Blue': ['블루', '蓝色'], 'Lilac': ['라일락', '淡紫色'], 'Rose': ['로즈', '玫瑰色'], 'Sage': ['세이지', '灰绿色'], 'Sand': ['샌드', '沙色'], 'Grey': ['그레이', '灰色'],
   'Volt': ['볼트', '荧光黄'], 'White': ['화이트', '白色'], 'Pink': ['핑크', '粉色'], 'Orange': ['오렌지', '橙色'], 'Cyan': ['시안', '青色'],
 };
+// The language in use: the one chosen in Settings, or with 'auto' the first of the device's languages that the app has.
+function curLang() {
+  if (S.lang !== 'auto') return S.lang;
+  for (const l of navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']) { const m = /^(en|ko|zh)(-|_|$)/i.exec(l); if (m) return m[1].toLowerCase(); }
+  return 'en';
+}
 function tr(key, ...args) {
-  const e = I18N[key], i = S.lang === 'ko' ? 0 : S.lang === 'zh' ? 1 : -1;
+  const e = I18N[key], lang = curLang(), i = lang === 'ko' ? 0 : lang === 'zh' ? 1 : -1;
   return (i < 0 || !e ? key : e[i]).replace(/\{(\d)\}/g, (_, n) => args[n] ?? '');
 }
 // Dates follow the chosen language. English keeps the device's own English format if it has one.
-const LOCALE = () => S.lang === 'ko' ? 'ko-KR' : S.lang === 'zh' ? 'zh-CN' : /^en\b/i.test(navigator.language || '') ? undefined : 'en-US';
+const LOCALE = () => curLang() === 'ko' ? 'ko-KR' : curLang() === 'zh' ? 'zh-CN' : /^en\b/i.test(navigator.language || '') ? undefined : 'en-US';
 // Static text in the page: data-t (text), data-t-aria, data-t-ph (placeholder), data-t-alt. {0} = unit, {1} = currency.
 function applyI18n() {
   const a = [U(), S.currency ? `(${S.currency})` : ''], f = k => tr(k, ...a).replace(/ {2,}/g, ' ');
-  document.documentElement.lang = S.lang === 'zh' ? 'zh-CN' : S.lang;
+  document.documentElement.lang = curLang() === 'zh' ? 'zh-CN' : curLang();
   document.querySelectorAll('[data-t]').forEach(e => e.textContent = f(e.dataset.t));
   document.querySelectorAll('[data-t-aria]').forEach(e => e.setAttribute('aria-label', f(e.dataset.tAria)));
   document.querySelectorAll('[data-t-ph]').forEach(e => e.placeholder = f(e.dataset.tPh));
@@ -1264,7 +1273,7 @@ $('#stUnit').onchange = () => { const u = $('#stUnit').value === 'mi' ? 'mi' : '
 $('#setForm').onsubmit = e => {
   e.preventDefault();
   const lim = getD($('#stLimit'));
-  S.lang = ['ko', 'zh'].includes($('#stLang').value) ? $('#stLang').value : 'en';
+  S.lang = ['en', 'ko', 'zh'].includes($('#stLang').value) ? $('#stLang').value : 'auto';
   S.unit = $('#stUnit').value === 'mi' ? 'mi' : 'km';
   if (lim > 0 && Math.abs(lim - S.limitKm) > 1e-6) {
     S.limitKm = lim;

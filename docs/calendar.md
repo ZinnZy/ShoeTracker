@@ -117,7 +117,9 @@ The plain-background `cutout()` left real photos (floor, room, shoe rack) uncut,
 - `segmentAt()` picks the confidence mask that is strongest at the tapped point, softens the edge, and `cutout()` crops the result. The saved photo is still one PNG of at most 240px (`shoe.photo`, `shoe.photoCut`).
 
 ### Language (added later on 2026-11-17)
-- Settings has "Language": English (default), 한국어, 中文 (简体). Stored as `S.lang` (`'en'`, `'ko'`, `'zh'`), additive.
+- Settings has "Language": Automatic (the default), English, 한국어, 中文 (简体). Stored as `S.lang` (`'auto'`, `'en'`, `'ko'`, `'zh'`), additive.
+- **Automatic** follows the device: `curLang()` takes the first of the browser's languages (`navigator.languages`) that the app has, and English when none match. Any Chinese variant gets Simplified Chinese. A choice made in Settings overrides it.
+- Changed on 2026-11-18: the first version defaulted to English. `S.langV = 2` marks data that has been through the one-time migration, which turns that old default `'en'` into `'auto'` and keeps a Korean or Chinese choice. After it, `'en'` means English was chosen.
 - `I18N` in `index.html` maps each English string to `[Korean, Chinese]`; `tr(key, ...args)` looks it up and fills `{0}`, `{1}`…. English is the key, so a missing entry falls back to English.
 - Static page text carries `data-t`, `data-t-aria`, `data-t-ph` or `data-t-alt`; `applyI18n()` fills them on every render.
 - Dates and weekday names follow the chosen language (`LOCALE()`), not the device. Shoe types are stored in English and translated only on screen. The CSV export and the app name stay in English.
